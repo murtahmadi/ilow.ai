@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iLow — AI Claims Processing for Independent Adjusters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0B0B0B;
+      --bg-card:     #111111;
+      --bg-border:   #1A1A1A;
+      --accent:      #F97316;
+      --accent-soft: #FDBA74;
+      --accent-dim:  rgba(249,115,22,0.12);
+      --accent-glow: rgba(249,115,22,0.22);
+      --green:       #22C55E;
+      --green-dim:   rgba(34,197,94,0.12);
+      --red:         #EF4444;
+      --red-dim:     rgba(239,68,68,0.12);
+      --text-pri:    #F9FAFB;
+      --text-sec:    #A1A1AA;
+      --text-dim:    #6B7280;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-pri);
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(249,115,22,0.25); border-radius: 99px;
+      padding: 5px 14px; margin-bottom: 20px;
+    }
+    .tag::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      background: rgba(11,11,11,0.85); border-bottom: 1px solid var(--bg-border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    .nav-logo { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-pri); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-sec); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text-pri); }
+    .nav-cta {
+      background: var(--accent); color: #fff !important; padding: 8px 20px;
+      border-radius: 8px; font-weight: 600 !important; transition: background 0.2s, box-shadow 0.2s !important;
+    }
+    .nav-cta:hover { background: #D65A0D !important; box-shadow: 0 0 20px var(--accent-glow); }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative; min-height: 100vh; display: flex;
+      align-items: center; padding-top: 80px; overflow: hidden;
+    }
+    #hero::before {
+      content: ''; position: absolute; top: -200px; left: 30%;
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+      align-items: center; position: relative; z-index: 1;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 500; color: var(--accent);
+      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.25);
+      border-radius: 99px; padding: 6px 16px; margin-bottom: 24px;
+      animation: fadeUp 0.8s ease both;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: pulse 2s infinite;
+    }
+    .hero-headline {
+      font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.08; margin-bottom: 20px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .hero-headline .accent {
+      background: linear-gradient(135deg, #FDBA74 0%, #F97316 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text-sec); line-height: 1.8;
+      margin-bottom: 36px; animation: fadeUp 0.8s 0.2s ease both;
+    }
+    .hero-actions {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #fff; font-size: 0.95rem; font-weight: 600;
+      padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer;
+      text-decoration: none; transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { background: #D65A0D; box-shadow: 0 0 32px var(--accent-glow); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; color: var(--text-sec); font-size: 0.9rem; font-weight: 500;
+      padding: 14px 22px; border-radius: 10px; border: 1px solid var(--bg-border);
+      cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: #374151; color: var(--text-pri); }
+
+    /* Hero Mockup */
+    .hero-visual { animation: fadeUp 0.8s 0.4s ease both; }
+    .mockup-card {
+      background: var(--bg-card); border: 1px solid var(--bg-border);
+      border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
+    }
+    .mockup-card::before {
+      content: ''; position: absolute; top: -80px; right: -80px; width: 240px; height: 240px;
+      background: radial-gradient(circle, var(--accent-dim), transparent 70%); pointer-events: none;
+    }
+    .mockup-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--bg-border);
+    }
+    .mockup-claim-id { font-size: 0.78rem; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; }
+    .mockup-badge {
+      font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+      background: var(--green-dim); color: var(--green); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .mockup-claimant { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+    .mockup-type { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 16px; }
+    .mockup-section-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-dim); margin-bottom: 8px;
+    }
+    .mockup-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; padding: 7px 10px; border-radius: 7px; margin-bottom: 5px;
+    }
+    .mockup-item.covered { background: var(--green-dim); color: var(--green); }
+    .mockup-item.not-covered { background: var(--red-dim); color: #fca5a5; }
+    .mockup-item span { color: var(--text-sec); font-size: 0.75rem; margin-left: auto; }
+    .mockup-divider { border: none; border-top: 1px solid var(--bg-border); margin: 14px 0; }
+    .mockup-risk-row { display: flex; align-items: center; gap: 12px; }
+    .mockup-risk-label { font-size: 0.75rem; color: var(--text-dim); min-width: 70px; }
+    .mockup-risk-bar { flex: 1; height: 6px; background: var(--bg-border); border-radius: 99px; overflow: hidden; }
+    .mockup-risk-fill { height: 100%; width: 23%; background: var(--green); border-radius: 99px; }
+    .mockup-risk-val { font-size: 0.78rem; font-weight: 700; color: var(--green); }
+    .mockup-action {
+      margin-top: 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 8px; padding: 10px 14px; font-size: 0.82rem;
+      display: flex; align-items: center; gap: 8px; color: var(--green);
+    }
+    .mockup-processing {
+      position: absolute; bottom: -1px; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: shimmer 2s ease infinite;
+    }
+    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+    .scroll-hint {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-dim); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      animation: fadeUp 1s 0.9s ease both;
+    }
+    .scroll-hint-line {
+      width: 1px; height: 36px; background: linear-gradient(to bottom, var(--text-dim), transparent);
+      animation: scrollLine 2s ease infinite;
+    }
+    @keyframes scrollLine {
+      0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top}
+      50.01%{transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom}
+    }
+
+    /* ── STATS STRIP ── */
+    #stats {
+      border-top: 1px solid var(--bg-border); border-bottom: 1px solid var(--bg-border);
+      padding: 0; background: #0D0D0D;
+    }
+    .stats-inner {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-item {
+      padding: 36px 28px; text-align: center; border-right: 1px solid var(--bg-border);
+      transition: background 0.2s;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: rgba(249,115,22,0.04); }
+    .stat-number {
+      font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -0.04em;
+      color: var(--text-pri); margin-bottom: 4px;
+    }
+    .stat-number span { color: var(--accent); }
+    .stat-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+
+    /* ── SHARED SECTION ── */
+    section { padding: 100px 0; }
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-title { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 16px; }
+    .section-desc { font-size: 1.05rem; color: var(--text-sec); max-width: 520px; margin: 0 auto; }
+
+    /* ── PROBLEM ── */
+    #problem { background: linear-gradient(180deg, var(--bg) 0%, #0D0D0D 100%); }
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .problem-text h2 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 20px; }
+    .problem-text p { color: var(--text-sec); font-size: 1rem; line-height: 1.8; margin-bottom: 16px; }
+    .problem-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+    .problem-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 0.92rem; color: var(--text-sec); line-height: 1.6;
+    }
+    .problem-list li::before {
+      content: ''; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.3);
+      flex-shrink: 0; margin-top: 2px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23EF4444' stroke-width='3'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: center;
+    }
+
+    /* Timeline visual */
+    .timeline-card {
+      background: var(--bg-card); border: 1px solid var(--bg-border);
+      border-radius: 16px; padding: 28px; position: relative;
+    }
+    .timeline-row {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+    }
+    .timeline-row:last-child { margin-bottom: 0; }
+    .timeline-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dim); width: 90px; flex-shrink: 0; }
+    .timeline-bar-wrap { flex: 1; }
+    .timeline-bar {
+      height: 28px; border-radius: 6px; display: flex; align-items: center;
+      padding: 0 12px; font-size: 0.78rem; font-weight: 700;
+    }
+    .timeline-bar.old { background: var(--red-dim); color: #fca5a5; width: 100%; border: 1px solid rgba(239,68,68,0.2); }
+    .timeline-bar.new { background: var(--green-dim); color: var(--green); width: 18%; border: 1px solid rgba(34,197,94,0.2); min-width: 80px; }
+    .timeline-vs {
+      text-align: center; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-dim); margin: 4px 0 4px 106px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how { background: #0D0D0D; }
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; position: relative; }
+    .steps-grid::before {
+      content: ''; position: absolute; top: 36px; left: calc(16.67% + 12px);
+      right: calc(16.67% + 12px); height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .step-card {
+      background: var(--bg-card); border: 1px solid var(--bg-border);
+      border-radius: 16px; padding: 36px 28px; text-align: center;
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .step-card:hover { border-color: rgba(249,115,22,0.3); transform: translateY(-4px); }
+    .step-number {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--accent-dim); border: 2px solid rgba(249,115,22,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; color: var(--accent);
+      margin: 0 auto 20px;
+    }
+    .step-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+    .step-desc { font-size: 0.88rem; color: var(--text-sec); line-height: 1.7; }
+
+    /* ── FEATURES ── */
+    #features { background: linear-gradient(180deg, #0D0D0D 0%, var(--bg) 100%); }
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .feature-card {
+      background: var(--bg-card); border: 1px solid var(--bg-border);
+      border-radius: 16px; padding: 36px; position: relative; overflow: hidden;
+      cursor: default; transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .feature-card:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
+    .feature-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at top left, var(--accent-dim), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card:hover::after { opacity: 1; }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.18);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 1.35rem; position: relative; z-index: 1;
+    }
+    .feature-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; position: relative; z-index: 1; }
+    .feature-desc { font-size: 0.9rem; color: var(--text-sec); line-height: 1.7; position: relative; z-index: 1; }
+    .feature-detail {
+      margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--bg-border);
+      display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 1;
+    }
+    .feature-point {
+      font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: center; gap: 8px;
+    }
+    .feature-point::before {
+      content: ''; width: 4px; height: 4px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+    }
+
+    /* ── VIDEO ── */
+    #demo { background: var(--bg); }
+    .video-wrap {
+      max-width: 800px; margin: 0 auto; position: relative;
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid var(--bg-border);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    }
+    .video-placeholder {
+      background: #0D0D0D; aspect-ratio: 16/9;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; cursor: pointer; position: relative; overflow: hidden;
+    }
+    .video-placeholder::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(249,115,22,0.08), transparent 65%);
+    }
+    .play-btn {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 40px var(--accent-glow); position: relative; z-index: 1;
+    }
+    .video-placeholder:hover .play-btn { transform: scale(1.08); box-shadow: 0 0 60px var(--accent-glow); }
+    .video-label { font-size: 1rem; font-weight: 600; color: var(--text-sec); position: relative; z-index: 1; }
+    .video-sub { font-size: 0.82rem; color: var(--text-dim); position: relative; z-index: 1; }
+    .video-grid {
+      display: grid; grid-template-columns: 1px 1px;
+      position: absolute; inset: 0; pointer-events: none;
+    }
+
+    /* ── VISION ── */
+    #vision { background: linear-gradient(180deg, var(--bg) 0%, #0D0D0D 100%); text-align: center; }
+    .vision-inner { max-width: 760px; margin: 0 auto; }
+    .vision-quote {
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.35; color: var(--text-pri); margin-bottom: 28px;
+    }
+    .vision-quote .highlight { color: var(--accent); }
+    .vision-sub { font-size: 1rem; color: var(--text-sec); line-height: 1.8; max-width: 580px; margin: 0 auto 48px; }
+    .vision-metrics { display: flex; align-items: center; justify-content: center; gap: 64px; flex-wrap: wrap; }
+    .metric { text-align: center; }
+    .metric-value { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; }
+    .metric-value span { color: var(--accent); }
+    .metric-label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+
+    /* ── WAITLIST ── */
+    #waitlist { background: #0D0D0D; padding: 120px 0; }
+    .waitlist-box {
+      background: var(--bg-card); border: 1px solid var(--bg-border);
+      border-radius: 24px; padding: 72px 60px; text-align: center;
+      position: relative; overflow: hidden; max-width: 720px; margin: 0 auto;
+    }
+    .waitlist-box::before {
+      content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(249,115,22,0.12), transparent 70%); pointer-events: none;
+    }
+    .waitlist-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 14px; position: relative; z-index: 1; }
+    .waitlist-sub { font-size: 1rem; color: var(--text-sec); margin-bottom: 40px; position: relative; z-index: 1; }
+    .waitlist-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+    .waitlist-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--bg-border);
+      border-radius: 10px; padding: 14px 18px; font-size: 0.95rem; color: var(--text-pri);
+      font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .waitlist-input::placeholder { color: var(--text-dim); }
+    .waitlist-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .waitlist-btn {
+      background: var(--accent); color: #fff; font-size: 0.9rem; font-weight: 600;
+      padding: 14px 24px; border-radius: 10px; border: none; cursor: pointer;
+      font-family: inherit; white-space: nowrap; transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .waitlist-btn:hover { background: #D65A0D; box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
+    .waitlist-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 16px; position: relative; z-index: 1; }
+    .waitlist-success {
+      display: none; align-items: center; justify-content: center; gap: 10px;
+      color: var(--accent); font-weight: 600; font-size: 0.95rem;
+      margin-top: 16px; position: relative; z-index: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--bg-border); padding: 40px 0; background: var(--bg); }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-pri); text-decoration: none; }
+    .footer-logo span { color: var(--accent); }
+    .footer-copy { font-size: 0.82rem; color: var(--text-dim); }
+    .footer-links { display: flex; gap: 24px; list-style: none; align-items: center; }
+    .footer-links a {
+      font-size: 0.82rem; color: var(--text-dim); text-decoration: none;
+      transition: color 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .footer-links a:hover { color: var(--text-sec); }
+    .linkedin-icon { width: 16px; height: 16px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      section { padding: 72px 0; }
+      .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+      .hero-visual { display: none; }
+      .problem-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .steps-grid::before { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(3) { border-top: 1px solid var(--bg-border); }
+      .nav-links { display: none; }
+      .waitlist-box { padding: 48px 28px; }
+      .waitlist-form { flex-direction: column; }
+      .vision-metrics { gap: 36px; }
+      .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stats-inner { grid-template-columns: 1fr 1fr; }
+      .hero-headline { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="#hero" class="nav-logo">i<span>L</span>ow</a>
+      <ul class="nav-links">
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-grid">
+
+        <!-- Left: Text -->
+        <div>
+          <div class="hero-eyebrow">Now in private beta</div>
+          <h1 class="hero-headline">
+            AI that closes<br />
+            <span class="accent">insurance claims</span><br />
+            in minutes
+          </h1>
+          <p class="hero-sub">
+            iLow automates the three hardest parts of claims processing —
+            policy coverage analysis, damage image assessment, and fraud detection —
+            so adjusters spend time on decisions, not paperwork.
+          </p>
+          <div class="hero-actions">
+            <a href="#waitlist" class="btn-primary">
+              Join the Waitlist
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#how" class="btn-secondary">
+              See how it works
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Animated mockup -->
+        <div class="hero-visual">
+          <div class="mockup-card">
+            <div class="mockup-header">
+              <div>
+                <div class="mockup-claim-id">CLAIM #2026-04-883</div>
+              </div>
+              <div class="mockup-badge">✓ Analyzed in 8s</div>
+            </div>
+            <div class="mockup-claimant">Sarah Mitchell</div>
+            <div class="mockup-type">🏠 Hail Damage · Grand Rapids, MI</div>
+
+            <div class="mockup-section-label">Coverage Determination</div>
+            <div class="mockup-item covered">✅ Roof replacement <span>§4.2 — Covered</span></div>
+            <div class="mockup-item covered">✅ Skylight repair <span>§4.2 — Covered</span></div>
+            <div class="mockup-item covered">✅ Gutter repair <span>§4.3 — Covered</span></div>
+            <div class="mockup-item not-covered">❌ Fence replacement <span>§8.1 — Excluded</span></div>
+
+            <hr class="mockup-divider" />
+
+            <div class="mockup-section-label">Fraud Risk Score</div>
+            <div class="mockup-risk-row">
+              <div class="mockup-risk-label">Risk Score</div>
+              <div class="mockup-risk-bar"><div class="mockup-risk-fill"></div></div>
+              <div class="mockup-risk-val">23 / 100</div>
+            </div>
+
+            <div class="mockup-action">
+              ✅ Recommended Action: <strong>Auto-Approve</strong>
+            </div>
+            <div class="mockup-processing"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-hint-line"></div>
+    </div>
+  </section>
+
+  <!-- ── STATS ── -->
+  <div id="stats">
+    <div class="container">
+      <div class="stats-inner">
+        <div class="stat-item fade-in">
+          <div class="stat-number">25–<span>38</span></div>
+          <div class="stat-desc">days average manual<br />claims cycle today</div>
+        </div>
+        <div class="stat-item fade-in">
+          <div class="stat-number"><span>$8,500</span></div>
+          <div class="stat-desc">average cost to process<br />one claim manually</div>
+        </div>
+        <div class="stat-item fade-in">
+          <div class="stat-number"><span>40</span>%</div>
+          <div class="stat-desc">cycle time reduction<br />with AI-assisted review</div>
+        </div>
+        <div class="stat-item fade-in">
+          <div class="stat-number"><span>3</span> in <span>1</span></div>
+          <div class="stat-desc">policy, image & fraud<br />analysis in one platform</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROBLEM ── -->
+  <section id="problem">
+    <div class="container">
+      <div class="problem-grid">
+
+        <div class="problem-text fade-in">
+          <div class="tag">The Problem</div>
+          <h2>Claims processing is broken — and getting worse.</h2>
+          <p>
+            The average insurance claim takes 25 to 38 days to close. Adjusters manually
+            read policy documents, review damage photos by eye, and run fraud checks through
+            disconnected systems.
+          </p>
+          <p>
+            Meanwhile, the adjuster workforce is retiring faster than it is being replaced.
+            Agencies are stretched thin and mid-market carriers have no AI solution built for them —
+            existing tools like Tractable and Lemonade serve large UK enterprises only.
+          </p>
+          <ul class="problem-list">
+            <li>Policy documents reviewed line-by-line by hand</li>
+            <li>Damage photos assessed with no structured output</li>
+            <li>Fraud checks done manually with spreadsheets</li>
+            <li>Experienced adjusters retiring with no replacement pipeline</li>
+            <li>No affordable AI tool exists for US independent adjusters</li>
+          </ul>
+        </div>
+
+        <div class="fade-in">
+          <div class="timeline-card">
+            <div class="mockup-section-label" style="margin-bottom:20px">Claim Cycle Time Comparison</div>
+
+            <div class="timeline-row">
+              <div class="timeline-label">Without AI</div>
+              <div class="timeline-bar-wrap">
+                <div class="timeline-bar old">25 – 38 days</div>
+              </div>
+            </div>
+            <div class="timeline-vs">vs</div>
+            <div class="timeline-row">
+              <div class="timeline-label">With iLow</div>
+              <div class="timeline-bar-wrap">
+                <div class="timeline-bar new">Minutes</div>
+              </div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid var(--bg-border);margin:24px 0" />
+
+            <div class="mockup-section-label" style="margin-bottom:12px">What iLow replaces</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
+                <span style="color:var(--green);font-size:1rem">→</span> Manual policy reading
+                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">AI Policy Matcher</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
+                <span style="color:var(--green);font-size:1rem">→</span> Photo review by eye
+                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">Image Assessor</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
+                <span style="color:var(--green);font-size:1rem">→</span> Manual fraud checks
+                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">Fraud Screener</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section id="how">
+    <div class="container">
+      <div class="section-header fade-in">
+        <div class="tag">How It Works</div>
+        <h2 class="section-title">Three steps.<br />One decision.</h2>
+        <p class="section-desc">iLow walks adjusters through the full claim review pipeline — from intake to recommended action — in minutes.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card fade-in">
+          <div class="step-number">1</div>
+          <div class="step-title">Upload the Claim</div>
+          <p class="step-desc">Drop in a policy PDF, paste the claim summary, upload damage photos, or fill in the claim details. iLow accepts everything adjusters already have.</p>
+        </div>
+        <div class="step-card fade-in">
+          <div class="step-number">2</div>
+          <div class="step-title">AI Analyzes Everything</div>
+          <p class="step-desc">iLow reads the policy language, assesses image damage type and severity, and cross-references claim details against fraud indicators — simultaneously.</p>
+        </div>
+        <div class="step-card fade-in">
+          <div class="step-number">3</div>
+          <div class="step-title">Get a Structured Decision</div>
+          <p class="step-desc">Receive a coverage determination with policy citations, a damage report with cost tiers, a fraud risk score, and a clear recommended action — all in one view.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header fade-in">
+        <div class="tag">Capabilities</div>
+        <h2 class="section-title">Everything you need.<br />Nothing you don't.</h2>
+        <p class="section-desc">Purpose-built for independent adjusters and regional agencies who can't afford slow, manual processing.</p>
+      </div>
+      <div class="features-grid">
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">📄</div>
+          <div class="feature-title">Policy-to-Claim Matcher</div>
+          <p class="feature-desc">Upload any homeowner, auto, or commercial policy PDF alongside a claim summary. iLow reads both and returns a structured list of covered and not-covered items — each with a direct citation to the policy language.</p>
+          <div class="feature-detail">
+            <div class="feature-point">Supports any standard PDF policy format</div>
+            <div class="feature-point">Direct citations to policy sections</div>
+            <div class="feature-point">Overall coverage determination with confidence score</div>
+          </div>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">📷</div>
+          <div class="feature-title">Damage Image Assessor</div>
+          <p class="feature-desc">Upload roof, interior, or vehicle damage photos. iLow identifies the damage type, assigns a severity rating (Minor to Total Loss), classifies affected materials by replacement cost tier, and flags anomalies worth investigating.</p>
+          <div class="feature-detail">
+            <div class="feature-point">Damage type: hail, water, fire, collision, wind</div>
+            <div class="feature-point">Material cost tiers: Low / Medium / High</div>
+            <div class="feature-point">Estimated repair scope and red flags</div>
+          </div>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-title">Fraud Flag Screener</div>
+          <p class="feature-desc">Run claim details through iLow's AI fraud analysis. It checks for new-policy claims, high-frequency claimants, date inconsistencies, high-risk zip codes, inflated amounts, and vague or suspicious descriptions.</p>
+          <div class="feature-detail">
+            <div class="feature-point">Risk score from 0–100 with explanation</div>
+            <div class="feature-point">Individual red flags with severity ratings</div>
+            <div class="feature-point">Recommended action: Approve / Review / Investigate</div>
+          </div>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Built for Speed and Clarity</div>
+          <p class="feature-desc">No training required. No complex setup. Adjusters upload what they already have and get a structured result in seconds. Every output is designed to be handed directly to a supervisor or used in a claim file.</p>
+          <div class="feature-detail">
+            <div class="feature-point">Results in under 15 seconds per claim</div>
+            <div class="feature-point">Structured JSON output for system integration</div>
+            <div class="feature-point">Explainable AI — every decision has a reason</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEMO VIDEO ── -->
+  <section id="demo">
+    <div class="container">
+      <div class="section-header fade-in">
+        <div class="tag">See It In Action</div>
+        <h2 class="section-title">Watch iLow process<br />a real claim.</h2>
+        <p class="section-desc">A live walkthrough of the full pipeline — policy match, image assessment, and fraud screen — on a single claim in under 60 seconds.</p>
+      </div>
+      <div class="video-wrap fade-in">
+        <div class="video-placeholder">
+          <div class="play-btn">▶</div>
+          <div class="video-label">iLow Demo — Full Claims Pipeline</div>
+          <div class="video-sub">60 seconds · Policy + Image + Fraud</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── VISION ── -->
+  <section id="vision">
+    <div class="container">
+      <div class="vision-inner fade-in">
+        <div class="tag">Our Vision</div>
+        <p class="vision-quote">
+          A world where <span class="highlight">every insurance claim</span> gets a fair, fast decision —
+          not because we replaced adjusters, but because we gave them the tools they never had.
+        </p>
+        <p class="vision-sub">
+          The US mid-market — regional agencies, independent adjusters, smaller carriers — has been left behind
+          by AI built for enterprises. iLow is changing that. We're starting with the three hardest daily tasks
+          and building toward a full claims intelligence platform.
+        </p>
+        <div class="vision-metrics">
+          <div class="metric">
+            <div class="metric-value"><span>40</span>%</div>
+            <div class="metric-label">Faster cycle time</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value"><span>3</span>x</div>
+            <div class="metric-label">More claims per adjuster</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value"><span>$0</span></div>
+            <div class="metric-label">Setup cost</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WAITLIST ── -->
+  <section id="waitlist">
+    <div class="container">
+      <div class="waitlist-box fade-in">
+        <div class="tag">Early Access</div>
+        <h2 class="waitlist-title">Be among the first inside iLow</h2>
+        <p class="waitlist-sub">
+          We're onboarding a small group of adjusters and agency owners to shape the product.
+          Drop your email and we'll reach out personally.
+        </p>
+        <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+          <input type="email" class="waitlist-input" placeholder="your@email.com" required id="waitlist-email" />
+          <button type="submit" class="waitlist-btn">Request Early Access</button>
+        </form>
+        <div class="waitlist-success" id="waitlist-success">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+          You're on the list. We'll be in touch soon.
+        </div>
+        <p class="waitlist-note">No spam. No commitment. Just early access to a tool built for your workflow.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="container footer-inner">
+      <a href="#hero" class="footer-logo">i<span>L</span>ow</a>
+      <p class="footer-copy">© 2026 iLow AI. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+        <li>
+          <a href="https://www.linkedin.com/company/ilow-ai" target="_blank" rel="noopener">
+            <svg class="linkedin-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            LinkedIn
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    /* Fade-in on scroll */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const siblings = Array.from(entry.target.parentElement.querySelectorAll('.fade-in'));
+          const delay = siblings.indexOf(entry.target) * 80;
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    /* Waitlist form */
+    function handleWaitlist(e) {
+      e.preventDefault();
+      const form = document.querySelector('.waitlist-form');
+      const note = document.querySelector('.waitlist-note');
+      const success = document.getElementById('waitlist-success');
+      form.style.transition = 'opacity 0.35s, transform 0.35s';
+      form.style.opacity = '0'; form.style.transform = 'translateY(-8px)';
+      note.style.transition = 'opacity 0.3s'; note.style.opacity = '0';
+      setTimeout(() => {
+        form.style.display = 'none'; note.style.display = 'none';
+        success.style.display = 'flex'; success.style.opacity = '0';
+        success.style.transition = 'opacity 0.4s';
+        requestAnimationFrame(() => success.style.opacity = '1');
+      }, 350);
+    }
+
+    /* Nav active highlight */
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+      navLinks.forEach(a => {
+        a.style.color = '';
+        if (a.getAttribute('href') === `#${current}`) a.style.color = 'var(--text-pri)';
+      });
+    }, { passive: true });
+
+    /* Video placeholder click */
+    document.querySelector('.video-placeholder').addEventListener('click', () => {
+      alert('Demo video coming soon! In the meantime, request early access to see a live walkthrough.');
+    });
+  </script>
+
+</body>
+</html>
