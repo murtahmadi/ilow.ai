@@ -3,860 +3,1263 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>iLow — AI Claims Processing for Independent Adjusters</title>
+  <title>iLow — AI Claims Intelligence for Independent Adjusters</title>
+  <meta name="description" content="iLow automates insurance claims processing — policy coverage analysis, damage assessment, and fraud detection — in minutes, not weeks." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ─── TOKENS ─── */
     :root {
-      --bg:          #0B0B0B;
-      --bg-card:     #111111;
-      --bg-border:   #1A1A1A;
-      --accent:      #F97316;
-      --accent-soft: #FDBA74;
-      --accent-dim:  rgba(249,115,22,0.12);
-      --accent-glow: rgba(249,115,22,0.22);
-      --green:       #22C55E;
-      --green-dim:   rgba(34,197,94,0.12);
-      --red:         #EF4444;
-      --red-dim:     rgba(239,68,68,0.12);
-      --text-pri:    #F9FAFB;
-      --text-sec:    #A1A1AA;
-      --text-dim:    #6B7280;
+      --bg:         #06060A;
+      --bg-1:       #0C0C12;
+      --bg-2:       #111118;
+      --bg-3:       #16161E;
+      --border:     #1E1E2C;
+      --border-2:   #2A2A3A;
+      --accent:     #F97316;
+      --accent-2:   #FDBA74;
+      --accent-dim: rgba(249,115,22,0.10);
+      --accent-glow:rgba(249,115,22,0.20);
+      --green:      #10B981;
+      --green-dim:  rgba(16,185,129,0.10);
+      --red:        #EF4444;
+      --red-dim:    rgba(239,68,68,0.10);
+      --yellow:     #F59E0B;
+      --yellow-dim: rgba(245,158,11,0.10);
+      --blue:       #6366F1;
+      --blue-dim:   rgba(99,102,241,0.10);
+      --t1:         #F0F0FF;
+      --t2:         #9898B0;
+      --t3:         #55556A;
+      --mono:       'JetBrains Mono', 'Courier New', monospace;
     }
 
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; font-size: 16px; }
-
     body {
-      background: var(--bg);
-      color: var(--text-pri);
+      background: var(--bg); color: var(--t1);
       font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    img, svg { display: block; }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; cursor: pointer; }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    /* ─── LAYOUT ─── */
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+    section { padding: 108px 0; }
 
-    .tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    /* ─── TYPOGRAPHY ─── */
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
       color: var(--accent); background: var(--accent-dim);
-      border: 1px solid rgba(249,115,22,0.25); border-radius: 99px;
-      padding: 5px 14px; margin-bottom: 20px;
+      border: 1px solid rgba(249,115,22,0.22); border-radius: 99px;
+      padding: 5px 14px; margin-bottom: 22px;
     }
-    .tag::before {
+    .eyebrow::before {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent); animation: pulse 2s infinite;
+      background: var(--accent); flex-shrink: 0;
+      animation: dot-pulse 2.2s ease infinite;
     }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes dot-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
 
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      background: rgba(11,11,11,0.85); border-bottom: 1px solid var(--bg-border);
+    .section-label {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--t3); margin-bottom: 8px;
     }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; inset: 0 0 auto 0; z-index: 200;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(6,6,10,0.82); border-bottom: 1px solid var(--border);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 1px 40px rgba(0,0,0,0.5); }
     .nav-inner {
       display: flex; align-items: center; justify-content: space-between; height: 64px;
     }
-    .nav-logo { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-pri); text-decoration: none; }
-    .nav-logo span { color: var(--accent); }
-    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
-    .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-sec); text-decoration: none; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--text-pri); }
-    .nav-cta {
-      background: var(--accent); color: #fff !important; padding: 8px 20px;
-      border-radius: 8px; font-weight: 600 !important; transition: background 0.2s, box-shadow 0.2s !important;
+    .nav-logo {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: -0.05em; color: var(--t1);
     }
-    .nav-cta:hover { background: #D65A0D !important; box-shadow: 0 0 20px var(--accent-glow); }
+    .nav-logo em { color: var(--accent); font-style: normal; }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+    .nav-links a {
+      font-size: 0.85rem; font-weight: 500; color: var(--t2);
+      transition: color 0.2s; position: relative;
+    }
+    .nav-links a:hover { color: var(--t1); }
+    .nav-cta {
+      background: var(--accent); color: #fff; font-size: 0.85rem; font-weight: 600;
+      padding: 9px 22px; border-radius: 8px; border: none;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { background: #E8650A; box-shadow: 0 0 28px var(--accent-glow); transform: translateY(-1px); }
 
-    /* ── HERO ── */
+    /* ─── HERO ─── */
     #hero {
-      position: relative; min-height: 100vh; display: flex;
-      align-items: center; padding-top: 80px; overflow: hidden;
+      min-height: 100vh; display: flex; align-items: center;
+      padding-top: 80px; position: relative; overflow: hidden;
     }
     #hero::before {
-      content: ''; position: absolute; top: -200px; left: 30%;
-      width: 800px; height: 800px;
-      background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 65%);
+      content: ''; position: absolute; top: -30%; left: 40%; width: 900px; height: 900px;
+      background: radial-gradient(circle, rgba(249,115,22,0.07) 0%, transparent 65%);
       pointer-events: none;
     }
+    #hero::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
     .hero-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
       align-items: center; position: relative; z-index: 1;
     }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 0.8rem; font-weight: 500; color: var(--accent);
-      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.25);
-      border-radius: 99px; padding: 6px 16px; margin-bottom: 24px;
-      animation: fadeUp 0.8s ease both;
-    }
-    .hero-eyebrow::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent); animation: pulse 2s infinite;
-    }
     .hero-headline {
-      font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800;
-      letter-spacing: -0.04em; line-height: 1.08; margin-bottom: 20px;
-      animation: fadeUp 0.8s 0.1s ease both;
+      font-size: clamp(2.2rem, 4.5vw, 3.5rem); font-weight: 900;
+      letter-spacing: -0.05em; line-height: 1.06; margin-bottom: 22px;
+      animation: fade-up 0.8s 0.1s both;
     }
-    .hero-headline .accent {
-      background: linear-gradient(135deg, #FDBA74 0%, #F97316 100%);
+    .hero-headline .grad {
+      background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 55%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .hero-sub {
-      font-size: 1.05rem; color: var(--text-sec); line-height: 1.8;
-      margin-bottom: 36px; animation: fadeUp 0.8s 0.2s ease both;
+      font-size: 1.05rem; color: var(--t2); line-height: 1.82; max-width: 480px;
+      margin-bottom: 38px; animation: fade-up 0.8s 0.2s both;
     }
-    .hero-actions {
-      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-      animation: fadeUp 0.8s 0.3s ease both;
-    }
+    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; animation: fade-up 0.8s 0.3s both; }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
-      background: var(--accent); color: #fff; font-size: 0.95rem; font-weight: 600;
-      padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer;
-      text-decoration: none; transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+      background: var(--accent); color: #fff; font-size: 0.92rem; font-weight: 700;
+      padding: 14px 28px; border-radius: 10px; border: none;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
     }
-    .btn-primary:hover { background: #D65A0D; box-shadow: 0 0 32px var(--accent-glow); transform: translateY(-1px); }
-    .btn-secondary {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: transparent; color: var(--text-sec); font-size: 0.9rem; font-weight: 500;
-      padding: 14px 22px; border-radius: 10px; border: 1px solid var(--bg-border);
-      cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+    .btn-primary:hover { background: #E8650A; box-shadow: 0 0 36px var(--accent-glow); transform: translateY(-2px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: var(--t2); font-size: 0.88rem; font-weight: 500;
+      padding: 14px 20px; border-radius: 10px;
+      border: 1px solid var(--border-2); background: transparent;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
-    .btn-secondary:hover { border-color: #374151; color: var(--text-pri); }
-
-    /* Hero Mockup */
-    .hero-visual { animation: fadeUp 0.8s 0.4s ease both; }
-    .mockup-card {
-      background: var(--bg-card); border: 1px solid var(--bg-border);
-      border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
-    }
-    .mockup-card::before {
-      content: ''; position: absolute; top: -80px; right: -80px; width: 240px; height: 240px;
-      background: radial-gradient(circle, var(--accent-dim), transparent 70%); pointer-events: none;
-    }
-    .mockup-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--bg-border);
-    }
-    .mockup-claim-id { font-size: 0.78rem; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; }
-    .mockup-badge {
-      font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 99px;
-      background: var(--green-dim); color: var(--green); letter-spacing: 0.06em; text-transform: uppercase;
-    }
-    .mockup-claimant { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
-    .mockup-type { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 16px; }
-    .mockup-section-label {
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--text-dim); margin-bottom: 8px;
-    }
-    .mockup-item {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.82rem; padding: 7px 10px; border-radius: 7px; margin-bottom: 5px;
-    }
-    .mockup-item.covered { background: var(--green-dim); color: var(--green); }
-    .mockup-item.not-covered { background: var(--red-dim); color: #fca5a5; }
-    .mockup-item span { color: var(--text-sec); font-size: 0.75rem; margin-left: auto; }
-    .mockup-divider { border: none; border-top: 1px solid var(--bg-border); margin: 14px 0; }
-    .mockup-risk-row { display: flex; align-items: center; gap: 12px; }
-    .mockup-risk-label { font-size: 0.75rem; color: var(--text-dim); min-width: 70px; }
-    .mockup-risk-bar { flex: 1; height: 6px; background: var(--bg-border); border-radius: 99px; overflow: hidden; }
-    .mockup-risk-fill { height: 100%; width: 23%; background: var(--green); border-radius: 99px; }
-    .mockup-risk-val { font-size: 0.78rem; font-weight: 700; color: var(--green); }
-    .mockup-action {
-      margin-top: 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
-      border-radius: 8px; padding: 10px 14px; font-size: 0.82rem;
-      display: flex; align-items: center; gap: 8px; color: var(--green);
-    }
-    .mockup-processing {
-      position: absolute; bottom: -1px; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      animation: shimmer 2s ease infinite;
-    }
-    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-
-    .scroll-hint {
-      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    .btn-ghost:hover { border-color: var(--t3); color: var(--t1); background: var(--bg-2); }
+    .scroll-cue {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 6px;
-      color: var(--text-dim); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
-      animation: fadeUp 1s 0.9s ease both;
+      color: var(--t3); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
     }
-    .scroll-hint-line {
-      width: 1px; height: 36px; background: linear-gradient(to bottom, var(--text-dim), transparent);
-      animation: scrollLine 2s ease infinite;
-    }
-    @keyframes scrollLine {
-      0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top}
-      50.01%{transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom}
-    }
+    .scroll-line { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--t3), transparent); animation: scroll-ani 2.2s ease infinite; }
+    @keyframes scroll-ani { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 50.01%{transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
 
-    /* ── STATS STRIP ── */
-    #stats {
-      border-top: 1px solid var(--bg-border); border-bottom: 1px solid var(--bg-border);
-      padding: 0; background: #0D0D0D;
+    /* ─── DEMO CARD ─── */
+    .demo-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      animation: fade-up 0.8s 0.4s both;
+      position: relative;
     }
-    .stats-inner {
-      display: grid; grid-template-columns: repeat(4, 1fr);
+    .demo-card::before {
+      content: ''; position: absolute; inset: -1px; border-radius: 19px; z-index: -1;
+      background: linear-gradient(135deg, rgba(249,115,22,0.25), transparent 40%, transparent 70%, rgba(99,102,241,0.12));
     }
-    .stat-item {
-      padding: 36px 28px; text-align: center; border-right: 1px solid var(--bg-border);
-      transition: background 0.2s;
-    }
-    .stat-item:last-child { border-right: none; }
-    .stat-item:hover { background: rgba(249,115,22,0.04); }
-    .stat-number {
-      font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -0.04em;
-      color: var(--text-pri); margin-bottom: 4px;
-    }
-    .stat-number span { color: var(--accent); }
-    .stat-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
-
-    /* ── SHARED SECTION ── */
-    section { padding: 100px 0; }
-    .section-header { text-align: center; margin-bottom: 64px; }
-    .section-title { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 16px; }
-    .section-desc { font-size: 1.05rem; color: var(--text-sec); max-width: 520px; margin: 0 auto; }
-
-    /* ── PROBLEM ── */
-    #problem { background: linear-gradient(180deg, var(--bg) 0%, #0D0D0D 100%); }
-    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-    .problem-text h2 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 20px; }
-    .problem-text p { color: var(--text-sec); font-size: 1rem; line-height: 1.8; margin-bottom: 16px; }
-    .problem-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
-    .problem-list li {
-      display: flex; align-items: flex-start; gap: 12px;
-      font-size: 0.92rem; color: var(--text-sec); line-height: 1.6;
-    }
-    .problem-list li::before {
-      content: ''; width: 20px; height: 20px; border-radius: 50%;
-      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.3);
-      flex-shrink: 0; margin-top: 2px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23EF4444' stroke-width='3'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: center;
-    }
-
-    /* Timeline visual */
-    .timeline-card {
-      background: var(--bg-card); border: 1px solid var(--bg-border);
-      border-radius: 16px; padding: 28px; position: relative;
-    }
-    .timeline-row {
-      display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
-    }
-    .timeline-row:last-child { margin-bottom: 0; }
-    .timeline-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dim); width: 90px; flex-shrink: 0; }
-    .timeline-bar-wrap { flex: 1; }
-    .timeline-bar {
-      height: 28px; border-radius: 6px; display: flex; align-items: center;
-      padding: 0 12px; font-size: 0.78rem; font-weight: 700;
-    }
-    .timeline-bar.old { background: var(--red-dim); color: #fca5a5; width: 100%; border: 1px solid rgba(239,68,68,0.2); }
-    .timeline-bar.new { background: var(--green-dim); color: var(--green); width: 18%; border: 1px solid rgba(34,197,94,0.2); min-width: 80px; }
-    .timeline-vs {
-      text-align: center; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--text-dim); margin: 4px 0 4px 106px;
-    }
-
-    /* ── HOW IT WORKS ── */
-    #how { background: #0D0D0D; }
-    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; position: relative; }
-    .steps-grid::before {
-      content: ''; position: absolute; top: 36px; left: calc(16.67% + 12px);
-      right: calc(16.67% + 12px); height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    }
-    .step-card {
-      background: var(--bg-card); border: 1px solid var(--bg-border);
-      border-radius: 16px; padding: 36px 28px; text-align: center;
-      transition: border-color 0.25s, transform 0.25s;
-    }
-    .step-card:hover { border-color: rgba(249,115,22,0.3); transform: translateY(-4px); }
-    .step-number {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: var(--accent-dim); border: 2px solid rgba(249,115,22,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; font-weight: 800; color: var(--accent);
-      margin: 0 auto 20px;
-    }
-    .step-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
-    .step-desc { font-size: 0.88rem; color: var(--text-sec); line-height: 1.7; }
-
-    /* ── FEATURES ── */
-    #features { background: linear-gradient(180deg, #0D0D0D 0%, var(--bg) 100%); }
-    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .feature-card {
-      background: var(--bg-card); border: 1px solid var(--bg-border);
-      border-radius: 16px; padding: 36px; position: relative; overflow: hidden;
-      cursor: default; transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-    }
-    .feature-card:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
-    .feature-card::after {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at top left, var(--accent-dim), transparent 60%);
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .feature-card:hover::after { opacity: 1; }
-    .feature-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.18);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 20px; font-size: 1.35rem; position: relative; z-index: 1;
-    }
-    .feature-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; position: relative; z-index: 1; }
-    .feature-desc { font-size: 0.9rem; color: var(--text-sec); line-height: 1.7; position: relative; z-index: 1; }
-    .feature-detail {
-      margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--bg-border);
-      display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 1;
-    }
-    .feature-point {
-      font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: center; gap: 8px;
-    }
-    .feature-point::before {
-      content: ''; width: 4px; height: 4px; border-radius: 50%;
-      background: var(--accent); flex-shrink: 0;
-    }
-
-    /* ── VIDEO ── */
-    #demo { background: var(--bg); }
-    .video-wrap {
-      max-width: 800px; margin: 0 auto; position: relative;
-      border-radius: 20px; overflow: hidden;
-      border: 1px solid var(--bg-border);
-      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
-    }
-    .video-placeholder {
-      background: #0D0D0D; aspect-ratio: 16/9;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; cursor: pointer; position: relative; overflow: hidden;
-    }
-    .video-placeholder::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at center, rgba(249,115,22,0.08), transparent 65%);
-    }
-    .play-btn {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: var(--accent); display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 40px var(--accent-glow); position: relative; z-index: 1;
-    }
-    .video-placeholder:hover .play-btn { transform: scale(1.08); box-shadow: 0 0 60px var(--accent-glow); }
-    .video-label { font-size: 1rem; font-weight: 600; color: var(--text-sec); position: relative; z-index: 1; }
-    .video-sub { font-size: 0.82rem; color: var(--text-dim); position: relative; z-index: 1; }
-    .video-grid {
-      display: grid; grid-template-columns: 1px 1px;
-      position: absolute; inset: 0; pointer-events: none;
-    }
-
-    /* ── VISION ── */
-    #vision { background: linear-gradient(180deg, var(--bg) 0%, #0D0D0D 100%); text-align: center; }
-    .vision-inner { max-width: 760px; margin: 0 auto; }
-    .vision-quote {
-      font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 700; letter-spacing: -0.03em;
-      line-height: 1.35; color: var(--text-pri); margin-bottom: 28px;
-    }
-    .vision-quote .highlight { color: var(--accent); }
-    .vision-sub { font-size: 1rem; color: var(--text-sec); line-height: 1.8; max-width: 580px; margin: 0 auto 48px; }
-    .vision-metrics { display: flex; align-items: center; justify-content: center; gap: 64px; flex-wrap: wrap; }
-    .metric { text-align: center; }
-    .metric-value { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; }
-    .metric-value span { color: var(--accent); }
-    .metric-label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
-
-    /* ── WAITLIST ── */
-    #waitlist { background: #0D0D0D; padding: 120px 0; }
-    .waitlist-box {
-      background: var(--bg-card); border: 1px solid var(--bg-border);
-      border-radius: 24px; padding: 72px 60px; text-align: center;
-      position: relative; overflow: hidden; max-width: 720px; margin: 0 auto;
-    }
-    .waitlist-box::before {
-      content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
-      width: 600px; height: 400px;
-      background: radial-gradient(ellipse, rgba(249,115,22,0.12), transparent 70%); pointer-events: none;
-    }
-    .waitlist-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 14px; position: relative; z-index: 1; }
-    .waitlist-sub { font-size: 1rem; color: var(--text-sec); margin-bottom: 40px; position: relative; z-index: 1; }
-    .waitlist-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
-    .waitlist-input {
-      flex: 1; background: var(--bg); border: 1px solid var(--bg-border);
-      border-radius: 10px; padding: 14px 18px; font-size: 0.95rem; color: var(--text-pri);
-      font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .waitlist-input::placeholder { color: var(--text-dim); }
-    .waitlist-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-    .waitlist-btn {
-      background: var(--accent); color: #fff; font-size: 0.9rem; font-weight: 600;
-      padding: 14px 24px; border-radius: 10px; border: none; cursor: pointer;
-      font-family: inherit; white-space: nowrap; transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    .waitlist-btn:hover { background: #D65A0D; box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
-    .waitlist-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 16px; position: relative; z-index: 1; }
-    .waitlist-success {
-      display: none; align-items: center; justify-content: center; gap: 10px;
-      color: var(--accent); font-weight: 600; font-size: 0.95rem;
-      margin-top: 16px; position: relative; z-index: 1;
-    }
-
-    /* ── FOOTER ── */
-    footer { border-top: 1px solid var(--bg-border); padding: 40px 0; background: var(--bg); }
-    .footer-inner {
+    .demo-topbar {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
     }
-    .footer-logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-pri); text-decoration: none; }
-    .footer-logo span { color: var(--accent); }
-    .footer-copy { font-size: 0.82rem; color: var(--text-dim); }
+    .demo-dots { display: flex; gap: 6px; }
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-dot.r { background: #FF5F57; }
+    .demo-dot.y { background: #FFBD2E; }
+    .demo-dot.g { background: #28CA41; }
+    .demo-title { font-size: 0.75rem; font-weight: 600; color: var(--t3); letter-spacing: 0.05em; }
+    .demo-live {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--green); background: var(--green-dim);
+      border: 1px solid rgba(16,185,129,0.2); border-radius: 99px; padding: 3px 9px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .demo-live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: dot-pulse 2s infinite; }
+
+    /* Step indicator */
+    .demo-steps {
+      display: flex; align-items: center; padding: 14px 20px;
+      border-bottom: 1px solid var(--border); gap: 0; background: var(--bg-2);
+    }
+    .demo-step {
+      display: flex; align-items: center; gap: 8px; flex: 1;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+      color: var(--t3); transition: color 0.3s;
+    }
+    .demo-step.active { color: var(--accent); }
+    .demo-step.done { color: var(--green); }
+    .step-dot {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--bg-3); border: 1px solid var(--border-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; font-weight: 700; transition: all 0.3s;
+    }
+    .demo-step.active .step-dot { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .demo-step.done .step-dot { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+    .step-connector { flex: 1; height: 1px; background: var(--border); margin: 0 4px; transition: background 0.3s; }
+    .step-connector.done { background: var(--green); }
+
+    /* Progress bar */
+    .demo-progress { height: 2px; background: var(--border); overflow: hidden; }
+    .demo-progress-fill { height: 100%; width: 0; background: var(--accent); transition: width 0.8s ease; }
+
+    /* Demo body */
+    .demo-body { padding: 20px; min-height: 320px; }
+    .demo-claim-header { margin-bottom: 18px; }
+    .claim-id { font-family: var(--mono); font-size: 0.68rem; color: var(--t3); margin-bottom: 4px; }
+    .claim-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+    .claim-meta { font-size: 0.78rem; color: var(--t2); display: flex; gap: 12px; flex-wrap: wrap; }
+    .claim-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* Panels */
+    .demo-panel { display: none; animation: panel-in 0.4s ease both; }
+    .demo-panel.visible { display: block; }
+    @keyframes panel-in { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .panel-title {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title.policy { color: var(--blue); }
+    .panel-title.damage { color: var(--yellow); }
+    .panel-title.fraud  { color: var(--accent); }
+    .panel-title.decision { color: var(--green); }
+    .check-icon { font-size: 0.8rem; }
+
+    /* Policy items */
+    .policy-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .policy-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-radius: 8px; font-size: 0.78rem;
+    }
+    .policy-row.covered { background: var(--green-dim); border: 1px solid rgba(16,185,129,0.18); }
+    .policy-row.excluded { background: var(--red-dim); border: 1px solid rgba(239,68,68,0.18); }
+    .policy-row .item { font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .policy-row .clause { font-family: var(--mono); font-size: 0.65rem; color: var(--t3); }
+
+    /* Confidence bar */
+    .conf-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .conf-label { font-size: 0.7rem; color: var(--t3); min-width: 80px; }
+    .conf-bar { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .conf-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 0.8s 0.2s ease; }
+    .conf-val { font-size: 0.72rem; font-weight: 700; color: var(--accent); min-width: 32px; text-align: right; }
+
+    /* Damage grid */
+    .damage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .damage-cell { background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+    .damage-cell-label { font-size: 0.62rem; color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .damage-cell-value { font-size: 0.85rem; font-weight: 700; }
+    .severity-moderate { color: var(--yellow); }
+    .flag-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      background: var(--yellow-dim); border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 8px; font-size: 0.75rem; color: var(--yellow); margin-top: 8px;
+    }
+
+    /* Fraud gauge */
+    .fraud-gauge-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+    .gauge-svg { width: 80px; height: 50px; }
+    .gauge-score { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.04em; color: var(--green); }
+    .gauge-sub { font-size: 0.65rem; color: var(--t3); }
+    .fraud-checks { display: flex; flex-direction: column; gap: 5px; }
+    .fraud-check-row { font-size: 0.75rem; color: var(--t2); display: flex; align-items: center; gap: 7px; }
+    .fraud-check-row.ok::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* Decision */
+    .decision-box {
+      background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.04));
+      border: 1px solid rgba(16,185,129,0.25); border-radius: 10px;
+      padding: 16px; margin-bottom: 12px;
+    }
+    .decision-rec { font-size: 0.65rem; color: var(--t3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .decision-val { font-size: 1.1rem; font-weight: 800; color: var(--green); margin-bottom: 10px; }
+    .payout-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 4px 0; border-bottom: 1px solid rgba(16,185,129,0.1); }
+    .payout-row:last-child { border: none; font-weight: 700; }
+    .payout-row .label { color: var(--t3); }
+    .clause-cite {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--t3);
+      background: var(--bg-3); border-radius: 6px; padding: 6px 10px; margin-top: 10px;
+    }
+
+    /* Analyze button */
+    .demo-footer { padding: 0 20px 20px; }
+    .btn-analyze {
+      width: 100%; padding: 12px; border-radius: 8px;
+      background: var(--accent); color: #fff; font-size: 0.88rem; font-weight: 700;
+      border: none; transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-analyze:hover:not(:disabled) { background: #E8650A; box-shadow: 0 0 28px var(--accent-glow); transform: translateY(-1px); }
+    .btn-analyze:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-analyze .spinner {
+      width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: none;
+    }
+    @keyframes spin { to{ transform: rotate(360deg); } }
+
+    /* ─── STATS ─── */
+    #stats { padding: 0; background: var(--bg-1); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); }
+    .stat-cell {
+      padding: 44px 32px; border-right: 1px solid var(--border); text-align: center;
+      position: relative; overflow: hidden; transition: background 0.25s;
+    }
+    .stat-cell::before {
+      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 60%; height: 2px; background: var(--accent); transform-origin: center;
+      transform: translateX(-50%) scaleX(0); transition: transform 0.3s;
+    }
+    .stat-cell:hover { background: rgba(249,115,22,0.04); }
+    .stat-cell:hover::before { transform: translateX(-50%) scaleX(1); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num {
+      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 900; letter-spacing: -0.05em;
+      color: var(--t1); line-height: 1; margin-bottom: 8px;
+    }
+    .stat-num .accent { color: var(--accent); }
+    .stat-descriptor { font-size: 0.75rem; font-weight: 600; color: var(--t2); margin-bottom: 4px; }
+    .stat-source { font-size: 0.65rem; color: var(--t3); font-style: italic; }
+
+    /* ─── PROBLEM ─── */
+    #problem { background: var(--bg); }
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .problem-text h2 { font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 18px; }
+    .problem-text p { color: var(--t2); font-size: 0.98rem; line-height: 1.85; margin-bottom: 14px; }
+    .pain-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+    .pain-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.88rem; transition: border-color 0.2s;
+    }
+    .pain-item:hover { border-color: var(--border-2); }
+    .pain-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .pain-body strong { display: block; font-weight: 600; margin-bottom: 2px; color: var(--t1); }
+    .pain-body span { color: var(--t3); font-size: 0.82rem; }
+
+    /* Timeline comparison */
+    .compare-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+    .compare-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--t3); margin-bottom: 22px; }
+    .compare-row { margin-bottom: 20px; }
+    .compare-row-label { font-size: 0.75rem; font-weight: 600; color: var(--t2); margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .compare-bar-wrap { height: 32px; background: var(--bg-3); border-radius: 8px; overflow: hidden; }
+    .compare-bar {
+      height: 100%; border-radius: 8px; display: flex; align-items: center;
+      padding: 0 14px; font-size: 0.75rem; font-weight: 700;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .compare-bar.old { background: linear-gradient(90deg, rgba(239,68,68,0.25), rgba(239,68,68,0.15)); color: #FCA5A5; width: 0; }
+    .compare-bar.new { background: linear-gradient(90deg, var(--green-dim), rgba(16,185,129,0.06)); color: var(--green); width: 0; min-width: 90px; }
+    .compare-divider { text-align: center; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--t3); margin: 4px 0 12px; }
+    .savings-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-dim); border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 99px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
+      color: var(--green); margin-top: 10px;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    #how { background: var(--bg-1); }
+    .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+    .how-card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 36px 28px;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .how-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .how-card:hover { border-color: var(--border-2); transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,0,0.4); }
+    .how-card:hover::after { transform: scaleX(1); }
+    .how-num {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 900; color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .how-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .how-desc { font-size: 0.88rem; color: var(--t2); line-height: 1.75; }
+
+    /* ─── FEATURES ─── */
+    #features { background: var(--bg); }
+    .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .feat-card {
+      background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px; padding: 36px;
+      position: relative; overflow: hidden; transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .feat-card:hover { border-color: rgba(249,115,22,0.3); transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.3); }
+    .feat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at top left, rgba(249,115,22,0.06), transparent 55%);
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-dim); border: 1px solid rgba(249,115,22,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 20px;
+    }
+    .feat-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .feat-desc { font-size: 0.88rem; color: var(--t2); line-height: 1.75; margin-bottom: 18px; }
+    .feat-bullets { display: flex; flex-direction: column; gap: 7px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .feat-bullet { display: flex; align-items: baseline; gap: 9px; font-size: 0.78rem; color: var(--t3); }
+    .feat-bullet::before { content: '›'; color: var(--accent); font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+
+    /* ─── DEMO SECTION ─── */
+    #demo-section { background: var(--bg-1); }
+    .demo-section-inner { max-width: 860px; margin: 0 auto; }
+    .demo-section-inner .demo-card { animation: none; }
+
+    /* ─── VISION ─── */
+    #vision { background: var(--bg); text-align: center; }
+    .vision-inner { max-width: 680px; margin: 0 auto; }
+    .vision-statement {
+      font-size: clamp(1.6rem, 3.5vw, 2.3rem); font-weight: 900;
+      letter-spacing: -0.04em; line-height: 1.3; margin-bottom: 24px;
+    }
+    .vision-sub { font-size: 1rem; color: var(--t2); line-height: 1.85; max-width: 560px; margin: 0 auto 52px; }
+    .kpi-row { display: flex; align-items: center; justify-content: center; gap: 60px; flex-wrap: wrap; }
+    .kpi { text-align: center; }
+    .kpi-val {
+      font-size: 2.4rem; font-weight: 900; letter-spacing: -0.06em; color: var(--t1);
+      line-height: 1;
+    }
+    .kpi-val .ac { color: var(--accent); }
+    .kpi-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t3); margin-top: 6px; }
+
+    /* ─── CONTACT / ENTERPRISE CTA ─── */
+    #contact { background: var(--bg-1); padding: 120px 0; }
+    .cta-box {
+      max-width: 680px; margin: 0 auto; text-align: center;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 24px; padding: 64px 56px; position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 400px;
+      background: radial-gradient(ellipse, rgba(249,115,22,0.1), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 14px; position: relative; z-index: 1; }
+    .cta-sub { font-size: 1rem; color: var(--t2); margin-bottom: 36px; position: relative; z-index: 1; }
+    .cta-form { display: flex; gap: 12px; max-width: 440px; margin: 0 auto; position: relative; z-index: 1; }
+    .cta-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px; font-size: 0.92rem;
+      color: var(--t1); font-family: inherit; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cta-input::placeholder { color: var(--t3); }
+    .cta-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .cta-btn {
+      background: var(--accent); color: #fff; font-size: 0.88rem; font-weight: 700;
+      padding: 14px 22px; border-radius: 10px; border: none; white-space: nowrap;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .cta-btn:hover { background: #E8650A; box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
+    .cta-note { font-size: 0.72rem; color: var(--t3); margin-top: 18px; position: relative; z-index: 1; }
+    .cta-success {
+      display: none; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--green); font-weight: 600; position: relative; z-index: 1;
+    }
+
+    /* ─── FOOTER ─── */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-logo { font-size: 1.1rem; font-weight: 900; letter-spacing: -0.05em; }
+    .footer-logo em { color: var(--accent); font-style: normal; }
+    .footer-copy { font-size: 0.78rem; color: var(--t3); }
     .footer-links { display: flex; gap: 24px; list-style: none; align-items: center; }
-    .footer-links a {
-      font-size: 0.82rem; color: var(--text-dim); text-decoration: none;
-      transition: color 0.2s; display: flex; align-items: center; gap: 6px;
-    }
-    .footer-links a:hover { color: var(--text-sec); }
-    .linkedin-icon { width: 16px; height: 16px; }
+    .footer-links a { font-size: 0.78rem; color: var(--t3); transition: color 0.2s; display: flex; align-items: center; gap: 5px; }
+    .footer-links a:hover { color: var(--t2); }
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-    .fade-in { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    /* ─── FADE IN ─── */
+    @keyframes fade-up { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    .fi { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fi.in { opacity: 1; transform: translateY(0); }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
       section { padding: 72px 0; }
-      .hero-grid { grid-template-columns: 1fr; gap: 48px; }
-      .hero-visual { display: none; }
+      .hero-grid { grid-template-columns: 1fr; gap: 44px; }
       .problem-grid { grid-template-columns: 1fr; }
-      .steps-grid { grid-template-columns: 1fr; }
-      .steps-grid::before { display: none; }
+      .how-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
-      .stats-inner { grid-template-columns: repeat(2, 1fr); }
-      .stat-item:nth-child(2) { border-right: none; }
-      .stat-item:nth-child(3) { border-top: 1px solid var(--bg-border); }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .stat-cell:nth-child(2) { border-right: none; }
+      .stat-cell:nth-child(3) { border-top: 1px solid var(--border); }
       .nav-links { display: none; }
-      .waitlist-box { padding: 48px 28px; }
-      .waitlist-form { flex-direction: column; }
-      .vision-metrics { gap: 36px; }
+      .cta-box { padding: 44px 28px; }
+      .cta-form { flex-direction: column; }
+      .kpi-row { gap: 36px; }
       .footer-inner { flex-direction: column; align-items: center; text-align: center; }
     }
-    @media (max-width: 480px) {
-      .stats-inner { grid-template-columns: 1fr 1fr; }
-      .hero-headline { font-size: 2.2rem; }
+    @media (max-width: 520px) {
+      .damage-grid { grid-template-columns: 1fr; }
+      .demo-steps { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── NAV ── -->
-  <nav>
-    <div class="container nav-inner">
-      <a href="#hero" class="nav-logo">i<span>L</span>ow</a>
-      <ul class="nav-links">
-        <li><a href="#problem">Problem</a></li>
-        <li><a href="#how">How It Works</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
-      </ul>
-    </div>
-  </nav>
+<!-- ══ NAV ══ -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#hero" class="nav-logo">i<em>L</em>ow</a>
+    <ul class="nav-links">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#contact"><button class="nav-cta">Request Demo</button></a></li>
+    </ul>
+  </div>
+</nav>
 
-  <!-- ── HERO ── -->
-  <section id="hero">
-    <div class="container">
-      <div class="hero-grid">
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
 
-        <!-- Left: Text -->
-        <div>
-          <div class="hero-eyebrow">Now in private beta</div>
-          <h1 class="hero-headline">
-            AI that closes<br />
-            <span class="accent">insurance claims</span><br />
-            in minutes
-          </h1>
-          <p class="hero-sub">
-            iLow automates the three hardest parts of claims processing —
-            policy coverage analysis, damage image assessment, and fraud detection —
-            so adjusters spend time on decisions, not paperwork.
-          </p>
-          <div class="hero-actions">
-            <a href="#waitlist" class="btn-primary">
-              Join the Waitlist
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-            <a href="#how" class="btn-secondary">
-              See how it works
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
-            </a>
+      <!-- Left -->
+      <div>
+        <div class="eyebrow">Now in private beta</div>
+        <h1 class="hero-headline">
+          AI that reviews insurance<br />claims in <span class="grad">minutes</span> —<br />not weeks.
+        </h1>
+        <p class="hero-sub">
+          Built for independent adjusters and regional carriers to automate
+          coverage decisions, damage assessment, and fraud detection —
+          in one workflow.
+        </p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn-primary">
+            Request a Demo
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#how" class="btn-ghost">
+            See how it works
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: interactive demo card -->
+      <div class="demo-card" id="hero-demo">
+        <div class="demo-topbar">
+          <div class="demo-dots">
+            <div class="demo-dot r"></div>
+            <div class="demo-dot y"></div>
+            <div class="demo-dot g"></div>
+          </div>
+          <div class="demo-title">iLow Claims Intelligence</div>
+          <div class="demo-live">LIVE</div>
+        </div>
+
+        <div class="demo-steps">
+          <div class="demo-step" id="s1" data-step="1">
+            <div class="step-dot">1</div>Policy
+          </div>
+          <div class="step-connector" id="c1"></div>
+          <div class="demo-step" id="s2" data-step="2">
+            <div class="step-dot">2</div>Damage
+          </div>
+          <div class="step-connector" id="c2"></div>
+          <div class="demo-step" id="s3" data-step="3">
+            <div class="step-dot">3</div>Fraud
+          </div>
+          <div class="step-connector" id="c3"></div>
+          <div class="demo-step" id="s4" data-step="4">
+            <div class="step-dot">4</div>Decision
           </div>
         </div>
 
-        <!-- Right: Animated mockup -->
-        <div class="hero-visual">
-          <div class="mockup-card">
-            <div class="mockup-header">
-              <div>
-                <div class="mockup-claim-id">CLAIM #2026-04-883</div>
+        <div class="demo-progress"><div class="demo-progress-fill" id="progress-bar"></div></div>
+
+        <div class="demo-body">
+          <div class="demo-claim-header">
+            <div class="claim-id">CLAIM #HO-2026-04-883 &nbsp;·&nbsp; Filed April 3, 2026</div>
+            <div class="claim-name">Sarah Mitchell</div>
+            <div class="claim-meta">
+              <span>🏠 Hail Damage</span>
+              <span>📍 Grand Rapids, MI 49503</span>
+              <span>💰 $19,400 claimed</span>
+            </div>
+          </div>
+
+          <!-- Panel 1: Policy -->
+          <div class="demo-panel" id="panel-policy">
+            <div class="panel-title policy"><span class="check-icon">✦</span>Policy Analysis</div>
+            <div class="policy-rows">
+              <div class="policy-row covered">
+                <div class="item">✓ Roof replacement ($14,200)</div>
+                <div class="clause">§ HO-3, Coverage A</div>
               </div>
-              <div class="mockup-badge">✓ Analyzed in 8s</div>
+              <div class="policy-row covered">
+                <div class="item">✓ Skylight repair ($3,800)</div>
+                <div class="clause">§ HO-3, Coverage A</div>
+              </div>
+              <div class="policy-row covered">
+                <div class="item">✓ Gutter repair ($1,400)</div>
+                <div class="clause">§ HO-3, Coverage A</div>
+              </div>
+              <div class="policy-row excluded">
+                <div class="item">✗ Fence replacement</div>
+                <div class="clause">§ Exclusion 8.1</div>
+              </div>
             </div>
-            <div class="mockup-claimant">Sarah Mitchell</div>
-            <div class="mockup-type">🏠 Hail Damage · Grand Rapids, MI</div>
-
-            <div class="mockup-section-label">Coverage Determination</div>
-            <div class="mockup-item covered">✅ Roof replacement <span>§4.2 — Covered</span></div>
-            <div class="mockup-item covered">✅ Skylight repair <span>§4.2 — Covered</span></div>
-            <div class="mockup-item covered">✅ Gutter repair <span>§4.3 — Covered</span></div>
-            <div class="mockup-item not-covered">❌ Fence replacement <span>§8.1 — Excluded</span></div>
-
-            <hr class="mockup-divider" />
-
-            <div class="mockup-section-label">Fraud Risk Score</div>
-            <div class="mockup-risk-row">
-              <div class="mockup-risk-label">Risk Score</div>
-              <div class="mockup-risk-bar"><div class="mockup-risk-fill"></div></div>
-              <div class="mockup-risk-val">23 / 100</div>
+            <div class="conf-row">
+              <div class="conf-label">Confidence</div>
+              <div class="conf-bar"><div class="conf-fill" style="width:0%" data-target="91"></div></div>
+              <div class="conf-val">91%</div>
             </div>
-
-            <div class="mockup-action">
-              ✅ Recommended Action: <strong>Auto-Approve</strong>
-            </div>
-            <div class="mockup-processing"></div>
           </div>
-        </div>
 
+          <!-- Panel 2: Damage -->
+          <div class="demo-panel" id="panel-damage">
+            <div class="panel-title damage"><span class="check-icon">✦</span>Damage Assessment</div>
+            <div class="damage-grid">
+              <div class="damage-cell">
+                <div class="damage-cell-label">Damage Type</div>
+                <div class="damage-cell-value">Hail Impact</div>
+              </div>
+              <div class="damage-cell">
+                <div class="damage-cell-label">Severity</div>
+                <div class="damage-cell-value severity-moderate">Moderate</div>
+              </div>
+              <div class="damage-cell">
+                <div class="damage-cell-label">Cost Tier</div>
+                <div class="damage-cell-value">Medium</div>
+              </div>
+              <div class="damage-cell">
+                <div class="damage-cell-label">Scope</div>
+                <div class="damage-cell-value" style="font-size:0.75rem">Partial replacement</div>
+              </div>
+            </div>
+            <div class="flag-row">
+              ⚠ Flag: Missing contractor estimate — request before final approval
+            </div>
+          </div>
+
+          <!-- Panel 3: Fraud -->
+          <div class="demo-panel" id="panel-fraud">
+            <div class="panel-title fraud"><span class="check-icon">✦</span>Fraud Check</div>
+            <div class="fraud-gauge-wrap">
+              <div>
+                <div class="gauge-score" id="fraud-score">0</div>
+                <div class="gauge-sub">/ 100 · LOW RISK</div>
+              </div>
+              <div style="flex:1">
+                <div class="conf-bar" style="height:8px">
+                  <div class="conf-fill" id="fraud-bar" style="width:0%;background:var(--green)" data-target="23"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fraud-checks">
+              <div class="fraud-check-row ok">Policy age: 14 months — normal</div>
+              <div class="fraud-check-row ok">Prior claims: 0 in 3 years — clean</div>
+              <div class="fraud-check-row ok">ZIP 49503 — standard risk area</div>
+              <div class="fraud-check-row ok">Incident date consistent with weather data</div>
+            </div>
+          </div>
+
+          <!-- Panel 4: Decision -->
+          <div class="demo-panel" id="panel-decision">
+            <div class="panel-title decision"><span class="check-icon">✦</span>Coverage Decision</div>
+            <div class="decision-box">
+              <div class="decision-rec">Recommended Action</div>
+              <div class="decision-val">Approve &nbsp;·&nbsp; Confidence: 87%</div>
+              <div class="payout-row"><span class="label">Covered total</span><span>$19,400</span></div>
+              <div class="payout-row"><span class="label">Policy deductible</span><span>$1,000</span></div>
+              <div class="payout-row"><span class="label">Estimated net payout</span><span>$18,400</span></div>
+            </div>
+            <div class="clause-cite">Policy clause referenced: § HO-3, Coverage A — Dwelling</div>
+            <div class="flag-row" style="margin-top:10px">⚠ Request contractor estimate before final release</div>
+          </div>
+
+        </div><!-- /.demo-body -->
+
+        <div class="demo-footer">
+          <button class="btn-analyze" id="analyze-btn" onclick="runDemo()">
+            <div class="spinner" id="analyze-spinner"></div>
+            <span id="analyze-label">Analyze Claim →</span>
+          </button>
+        </div>
+      </div><!-- /.demo-card -->
+
+    </div>
+  </div>
+  <div class="scroll-cue"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- ══ STATS ══ -->
+<div id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-cell fi">
+        <div class="stat-num"><span class="accent counter" data-target="38">0</span> days</div>
+        <div class="stat-descriptor">Average claims cycle today</div>
+        <div class="stat-source">Typical industry range: 25–38 days</div>
+      </div>
+      <div class="stat-cell fi">
+        <div class="stat-num">$<span class="accent counter" data-target="8500" data-comma="true">0</span></div>
+        <div class="stat-descriptor">Cost to process one claim manually</div>
+        <div class="stat-source">Average cost per claim (industry estimate)</div>
+      </div>
+      <div class="stat-cell fi">
+        <div class="stat-num"><span class="accent counter" data-target="40">0</span>%</div>
+        <div class="stat-descriptor">Cycle time reduction with AI</div>
+        <div class="stat-source">Across policy, image, and fraud review</div>
+      </div>
+      <div class="stat-cell fi">
+        <div class="stat-num"><span class="accent">3</span> in <span class="accent">1</span></div>
+        <div class="stat-descriptor">Modules in one workflow</div>
+        <div class="stat-source">Policy · Damage · Fraud — unified</div>
       </div>
     </div>
-    <div class="scroll-hint">
-      <span>Scroll</span>
-      <div class="scroll-hint-line"></div>
-    </div>
-  </section>
+  </div>
+</div>
 
-  <!-- ── STATS ── -->
-  <div id="stats">
-    <div class="container">
-      <div class="stats-inner">
-        <div class="stat-item fade-in">
-          <div class="stat-number">25–<span>38</span></div>
-          <div class="stat-desc">days average manual<br />claims cycle today</div>
+<!-- ══ PROBLEM ══ -->
+<section id="problem">
+  <div class="container">
+    <div class="problem-grid">
+      <div class="problem-text fi">
+        <div class="eyebrow">The Problem</div>
+        <h2>Claims are slow, manual, and inconsistent.</h2>
+        <p>The average claim takes 25 to 38 days to close. Each step — policy review, image assessment, fraud check — is done by hand, in separate systems, by adjuster experience alone.</p>
+        <p>The workforce is retiring. Mid-market agencies have no AI tool built for them. Enterprise solutions like Tractable and Lemonade serve large UK carriers only.</p>
+        <ul class="pain-list">
+          <li class="pain-item">
+            <span class="pain-icon">📄</span>
+            <div class="pain-body">
+              <strong>Policies reviewed line-by-line</strong>
+              <span>Slow and error-prone — one missed clause changes the payout</span>
+            </div>
+          </li>
+          <li class="pain-item">
+            <span class="pain-icon">📷</span>
+            <div class="pain-body">
+              <strong>Photos assessed manually by eye</strong>
+              <span>Subjective decisions with no structured output or audit trail</span>
+            </div>
+          </li>
+          <li class="pain-item">
+            <span class="pain-icon">🔍</span>
+            <div class="pain-body">
+              <strong>Fraud checks run in disconnected systems</strong>
+              <span>Missed red flags and duplicated work across tools</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fi">
+        <div class="compare-card">
+          <div class="compare-title">Claim Cycle Time — Before vs. After iLow</div>
+
+          <div class="compare-row">
+            <div class="compare-row-label">
+              <span>Without AI</span><span style="color:var(--t3)">25–38 days</span>
+            </div>
+            <div class="compare-bar-wrap">
+              <div class="compare-bar old" data-width="100">25–38 days</div>
+            </div>
+          </div>
+          <div class="compare-divider">vs</div>
+          <div class="compare-row" style="margin-bottom:0">
+            <div class="compare-row-label">
+              <span>With iLow</span><span style="color:var(--green)">Minutes</span>
+            </div>
+            <div class="compare-bar-wrap">
+              <div class="compare-bar new" data-width="15">Minutes</div>
+            </div>
+          </div>
+
+          <div class="savings-pill">↓ Up to 40% faster cycle time</div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:22px 0" />
+
+          <div class="compare-title">What iLow replaces</div>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+              <span style="color:var(--t2)">Manual policy reading</span>
+              <span style="color:var(--green);font-size:0.7rem;font-weight:700;background:var(--green-dim);padding:3px 9px;border-radius:99px">AI Policy Matcher</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+              <span style="color:var(--t2)">Photo review by eye</span>
+              <span style="color:var(--blue);font-size:0.7rem;font-weight:700;background:var(--blue-dim);padding:3px 9px;border-radius:99px">Image Assessor</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+              <span style="color:var(--t2)">Manual fraud checks</span>
+              <span style="color:var(--accent);font-size:0.7rem;font-weight:700;background:var(--accent-dim);padding:3px 9px;border-radius:99px">Fraud Screener</span>
+            </div>
+          </div>
         </div>
-        <div class="stat-item fade-in">
-          <div class="stat-number"><span>$8,500</span></div>
-          <div class="stat-desc">average cost to process<br />one claim manually</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section id="how">
+  <div class="container">
+    <div class="section-header" style="text-align:center;margin-bottom:56px">
+      <div class="eyebrow" style="margin:0 auto 16px">How It Works</div>
+      <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-0.04em;margin-bottom:14px">Three steps. One decision.</h2>
+      <p style="color:var(--t2);font-size:0.98rem;max-width:500px;margin:0 auto">iLow walks adjusters through the full review pipeline — from intake to recommended action — in under a minute.</p>
+    </div>
+    <div class="how-grid fi">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-title">Upload the Claim</div>
+        <p class="how-desc">Drop in a policy PDF, paste a claim summary, upload damage photos, or fill in claim details. iLow accepts everything adjusters already work with — no system change required.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-title">AI Cross-Checks Everything</div>
+        <p class="how-desc">iLow AI cross-checks policy language, damage images, and claim data simultaneously — reading coverage clauses, classifying damage severity, and flagging fraud signals in a single pass.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-title">Get a Structured Decision</div>
+        <p class="how-desc">Receive a coverage determination with direct policy citations, a damage report with cost tiers, a fraud risk score, and a recommended action — all in one structured, auditable output.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section id="features">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="eyebrow" style="margin:0 auto 16px">Capabilities</div>
+      <h2 style="font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-0.04em;margin-bottom:14px">Built for real claim workflows.</h2>
+      <p style="color:var(--t2);font-size:0.98rem;max-width:500px;margin:0 auto">Purpose-built for independent adjusters and regional agencies — not enterprise carriers with dedicated AI teams.</p>
+    </div>
+    <div class="features-grid">
+
+      <div class="feat-card fi">
+        <div class="feat-icon">📄</div>
+        <div class="feat-title">Policy-to-Claim Matcher</div>
+        <p class="feat-desc">Upload any policy PDF alongside a claim summary. iLow reads both and returns a structured coverage determination with direct citations to policy language — instantly.</p>
+        <div class="feat-bullets">
+          <div class="feat-bullet">Supports any standard homeowner, auto, or commercial policy</div>
+          <div class="feat-bullet">Covered and excluded items with exact clause references</div>
+          <div class="feat-bullet">Confidence score with explainable reasoning</div>
         </div>
-        <div class="stat-item fade-in">
-          <div class="stat-number"><span>40</span>%</div>
-          <div class="stat-desc">cycle time reduction<br />with AI-assisted review</div>
+      </div>
+
+      <div class="feat-card fi">
+        <div class="feat-icon">📷</div>
+        <div class="feat-title">Damage Image Assessor</div>
+        <p class="feat-desc">Upload damage photos and receive a structured assessment: damage type, severity rating, affected materials by cost tier, estimated repair scope, and anomaly flags — in seconds.</p>
+        <div class="feat-bullets">
+          <div class="feat-bullet">Hail, water, fire, collision, wind damage classification</div>
+          <div class="feat-bullet">Material cost tiers: Low / Medium / High</div>
+          <div class="feat-bullet">Red flags for anomalies worth investigating</div>
         </div>
-        <div class="stat-item fade-in">
-          <div class="stat-number"><span>3</span> in <span>1</span></div>
-          <div class="stat-desc">policy, image & fraud<br />analysis in one platform</div>
+      </div>
+
+      <div class="feat-card fi">
+        <div class="feat-icon">🔍</div>
+        <div class="feat-title">Fraud Flag Screener</div>
+        <p class="feat-desc">Instantly detect fraud signals across claims, policies, and claimant history. iLow scores risk 0–100 and flags specific indicators with severity ratings and investigation notes.</p>
+        <div class="feat-bullets">
+          <div class="feat-bullet">New-policy claims, high-frequency claimants, date inconsistencies</div>
+          <div class="feat-bullet">High-risk ZIP codes and inflated amount detection</div>
+          <div class="feat-bullet">Action: Auto-Approve / Review / Investigate / Deny</div>
+        </div>
+      </div>
+
+      <div class="feat-card fi">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Built for Your Workflow</div>
+        <p class="feat-desc">Results in under 15 seconds. Every output is structured, explainable, and auditable — ready to attach to a claim file or hand to a supervisor. Works with your existing workflow — no system change required.</p>
+        <div class="feat-bullets">
+          <div class="feat-bullet">No training required — upload what you already have</div>
+          <div class="feat-bullet">Every AI decision has a cited reason</div>
+          <div class="feat-bullet">Structured output ready for your claim management system</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ DEMO SECTION ══ -->
+<section id="demo-section">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px">
+      <div class="eyebrow" style="margin:0 auto 16px">See It In Action</div>
+      <h2 style="font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:900;letter-spacing:-0.04em;margin-bottom:14px">Watch a claim processed<br />in seconds.</h2>
+      <p style="color:var(--t2);font-size:0.98rem;max-width:480px;margin:0 auto">The full pipeline — policy match, damage assessment, and fraud screen — on a single claim. Click Analyze to run it live.</p>
+    </div>
+    <div class="demo-section-inner fi">
+      <!-- Second demo card instance -->
+      <div class="demo-card" id="section-demo">
+        <div class="demo-topbar">
+          <div class="demo-dots"><div class="demo-dot r"></div><div class="demo-dot y"></div><div class="demo-dot g"></div></div>
+          <div class="demo-title">iLow Claims Intelligence — Live Demo</div>
+          <div class="demo-live">LIVE</div>
+        </div>
+        <div class="demo-steps">
+          <div class="demo-step" id="ss1"><div class="step-dot">1</div>Policy</div>
+          <div class="step-connector" id="sc1"></div>
+          <div class="demo-step" id="ss2"><div class="step-dot">2</div>Damage</div>
+          <div class="step-connector" id="sc2"></div>
+          <div class="demo-step" id="ss3"><div class="step-dot">3</div>Fraud</div>
+          <div class="step-connector" id="sc3"></div>
+          <div class="demo-step" id="ss4"><div class="step-dot">4</div>Decision</div>
+        </div>
+        <div class="demo-progress"><div class="demo-progress-fill" id="sprogress-bar"></div></div>
+        <div class="demo-body">
+          <div class="demo-claim-header">
+            <div class="claim-id">CLAIM #AU-2026-07-441 &nbsp;·&nbsp; Filed July 7, 2026</div>
+            <div class="claim-name">James Okonkwo</div>
+            <div class="claim-meta">
+              <span>🚗 Auto Collision</span>
+              <span>📍 Detroit, MI 48201</span>
+              <span>💰 $22,500 claimed</span>
+            </div>
+          </div>
+          <div class="demo-panel" id="spanel-policy">
+            <div class="panel-title policy"><span class="check-icon">✦</span>Policy Analysis</div>
+            <div class="policy-rows">
+              <div class="policy-row covered"><div class="item">✓ Collision repair ($18,200)</div><div class="clause">§ Auto, Coverage B</div></div>
+              <div class="policy-row covered"><div class="item">✓ Rental reimbursement ($800)</div><div class="clause">§ Auto, Coverage E</div></div>
+              <div class="policy-row excluded"><div class="item">✗ Custom aftermarket parts ($3,500)</div><div class="clause">§ Exclusion 12.3</div></div>
+            </div>
+            <div class="conf-row">
+              <div class="conf-label">Confidence</div>
+              <div class="conf-bar"><div class="conf-fill" style="width:0%" data-target="88"></div></div>
+              <div class="conf-val">88%</div>
+            </div>
+          </div>
+          <div class="demo-panel" id="spanel-damage">
+            <div class="panel-title damage"><span class="check-icon">✦</span>Damage Assessment</div>
+            <div class="damage-grid">
+              <div class="damage-cell"><div class="damage-cell-label">Damage Type</div><div class="damage-cell-value">Collision</div></div>
+              <div class="damage-cell"><div class="damage-cell-label">Severity</div><div class="damage-cell-value severity-moderate">Severe</div></div>
+              <div class="damage-cell"><div class="damage-cell-label">Cost Tier</div><div class="damage-cell-value">High</div></div>
+              <div class="damage-cell"><div class="damage-cell-label">Scope</div><div class="damage-cell-value" style="font-size:0.75rem">Full front-end repair</div></div>
+            </div>
+            <div class="flag-row">⚠ Flag: No police report attached — request before approval</div>
+          </div>
+          <div class="demo-panel" id="spanel-fraud">
+            <div class="panel-title fraud"><span class="check-icon">✦</span>Fraud Check</div>
+            <div class="fraud-gauge-wrap">
+              <div>
+                <div class="gauge-score" id="sfraud-score">0</div>
+                <div class="gauge-sub">/ 100 · MEDIUM RISK</div>
+              </div>
+              <div style="flex:1">
+                <div class="conf-bar" style="height:8px"><div class="conf-fill" id="sfraud-bar" style="width:0%;background:var(--yellow)" data-target="51"></div></div>
+              </div>
+            </div>
+            <div class="fraud-checks">
+              <div class="fraud-check-row ok">Policy age: 3 months — recent</div>
+              <div class="fraud-check-row" style="color:var(--yellow)">⚠ Prior claims: 2 in 18 months — elevated</div>
+              <div class="fraud-check-row ok">ZIP 48201 — standard area</div>
+              <div class="fraud-check-row" style="color:var(--yellow)">⚠ No independent witness listed</div>
+            </div>
+          </div>
+          <div class="demo-panel" id="spanel-decision">
+            <div class="panel-title decision"><span class="check-icon">✦</span>Coverage Decision</div>
+            <div class="decision-box" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.25)">
+              <div class="decision-rec">Recommended Action</div>
+              <div class="decision-val" style="color:var(--yellow)">Manual Review &nbsp;·&nbsp; Confidence: 72%</div>
+              <div class="payout-row"><span class="label">Covered total</span><span>$19,000</span></div>
+              <div class="payout-row"><span class="label">Policy deductible</span><span>$500</span></div>
+              <div class="payout-row"><span class="label">Pending investigation</span><span style="color:var(--yellow)">Hold</span></div>
+            </div>
+            <div class="clause-cite">Policy clause: § Auto Coverage B — Collision, excluding aftermarket</div>
+            <div class="flag-row" style="margin-top:10px">⚠ Obtain police report and verify prior claim history</div>
+          </div>
+        </div>
+        <div class="demo-footer">
+          <button class="btn-analyze" id="sanalyze-btn" onclick="runSectionDemo()">
+            <div class="spinner" id="sanalyze-spinner"></div>
+            <span id="sanalyze-label">Analyze Claim →</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- ── PROBLEM ── -->
-  <section id="problem">
-    <div class="container">
-      <div class="problem-grid">
-
-        <div class="problem-text fade-in">
-          <div class="tag">The Problem</div>
-          <h2>Claims processing is broken — and getting worse.</h2>
-          <p>
-            The average insurance claim takes 25 to 38 days to close. Adjusters manually
-            read policy documents, review damage photos by eye, and run fraud checks through
-            disconnected systems.
-          </p>
-          <p>
-            Meanwhile, the adjuster workforce is retiring faster than it is being replaced.
-            Agencies are stretched thin and mid-market carriers have no AI solution built for them —
-            existing tools like Tractable and Lemonade serve large UK enterprises only.
-          </p>
-          <ul class="problem-list">
-            <li>Policy documents reviewed line-by-line by hand</li>
-            <li>Damage photos assessed with no structured output</li>
-            <li>Fraud checks done manually with spreadsheets</li>
-            <li>Experienced adjusters retiring with no replacement pipeline</li>
-            <li>No affordable AI tool exists for US independent adjusters</li>
-          </ul>
+<!-- ══ VISION ══ -->
+<section id="vision">
+  <div class="container">
+    <div class="vision-inner fi">
+      <div class="eyebrow" style="margin:0 auto 20px">Our Vision</div>
+      <p class="vision-statement">
+        "We don't replace adjusters —<br />
+        we make them <span style="color:var(--accent)">3× faster</span><br />
+        and more consistent."
+      </p>
+      <p class="vision-sub">
+        The US mid-market — regional agencies, independent adjusters, smaller carriers —
+        has been left behind by AI tools built for enterprises. iLow changes that.
+        We start with the three hardest daily tasks and build toward a full claims intelligence platform.
+      </p>
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-val"><span class="ac kpi-counter" data-target="40">0</span>%</div>
+          <div class="kpi-label">Faster cycle time</div>
         </div>
-
-        <div class="fade-in">
-          <div class="timeline-card">
-            <div class="mockup-section-label" style="margin-bottom:20px">Claim Cycle Time Comparison</div>
-
-            <div class="timeline-row">
-              <div class="timeline-label">Without AI</div>
-              <div class="timeline-bar-wrap">
-                <div class="timeline-bar old">25 – 38 days</div>
-              </div>
-            </div>
-            <div class="timeline-vs">vs</div>
-            <div class="timeline-row">
-              <div class="timeline-label">With iLow</div>
-              <div class="timeline-bar-wrap">
-                <div class="timeline-bar new">Minutes</div>
-              </div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid var(--bg-border);margin:24px 0" />
-
-            <div class="mockup-section-label" style="margin-bottom:12px">What iLow replaces</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
-                <span style="color:var(--green);font-size:1rem">→</span> Manual policy reading
-                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">AI Policy Matcher</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
-                <span style="color:var(--green);font-size:1rem">→</span> Photo review by eye
-                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">Image Assessor</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;font-size:0.83rem;color:var(--text-sec)">
-                <span style="color:var(--green);font-size:1rem">→</span> Manual fraud checks
-                <span style="margin-left:auto;color:var(--green);font-size:0.75rem;font-weight:700">Fraud Screener</span>
-              </div>
-            </div>
-          </div>
+        <div class="kpi">
+          <div class="kpi-val"><span class="ac kpi-counter" data-target="3">0</span>×</div>
+          <div class="kpi-label">More claims per adjuster</div>
         </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ── HOW IT WORKS ── -->
-  <section id="how">
-    <div class="container">
-      <div class="section-header fade-in">
-        <div class="tag">How It Works</div>
-        <h2 class="section-title">Three steps.<br />One decision.</h2>
-        <p class="section-desc">iLow walks adjusters through the full claim review pipeline — from intake to recommended action — in minutes.</p>
-      </div>
-      <div class="steps-grid">
-        <div class="step-card fade-in">
-          <div class="step-number">1</div>
-          <div class="step-title">Upload the Claim</div>
-          <p class="step-desc">Drop in a policy PDF, paste the claim summary, upload damage photos, or fill in the claim details. iLow accepts everything adjusters already have.</p>
-        </div>
-        <div class="step-card fade-in">
-          <div class="step-number">2</div>
-          <div class="step-title">AI Analyzes Everything</div>
-          <p class="step-desc">iLow reads the policy language, assesses image damage type and severity, and cross-references claim details against fraud indicators — simultaneously.</p>
-        </div>
-        <div class="step-card fade-in">
-          <div class="step-number">3</div>
-          <div class="step-title">Get a Structured Decision</div>
-          <p class="step-desc">Receive a coverage determination with policy citations, a damage report with cost tiers, a fraud risk score, and a clear recommended action — all in one view.</p>
+        <div class="kpi">
+          <div class="kpi-val">$<span class="ac">0</span></div>
+          <div class="kpi-label">Setup cost</div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ── FEATURES ── -->
-  <section id="features">
-    <div class="container">
-      <div class="section-header fade-in">
-        <div class="tag">Capabilities</div>
-        <h2 class="section-title">Everything you need.<br />Nothing you don't.</h2>
-        <p class="section-desc">Purpose-built for independent adjusters and regional agencies who can't afford slow, manual processing.</p>
+<!-- ══ CONTACT ══ -->
+<section id="contact">
+  <div class="container">
+    <div class="cta-box fi">
+      <div class="eyebrow" style="margin:0 auto 16px">Request a Demo</div>
+      <h2 class="cta-title">See iLow in your claims workflow.</h2>
+      <p class="cta-sub">We'll walk you through a live demo tailored to your agency's claim types and volume.</p>
+      <form class="cta-form" onsubmit="handleDemo(event)">
+        <input type="email" class="cta-input" placeholder="Work email" required />
+        <button type="submit" class="cta-btn">Request Demo</button>
+      </form>
+      <div class="cta-success" id="cta-success">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+        <span>We'll be in touch within 24 hours.</span>
       </div>
-      <div class="features-grid">
-
-        <div class="feature-card fade-in">
-          <div class="feature-icon">📄</div>
-          <div class="feature-title">Policy-to-Claim Matcher</div>
-          <p class="feature-desc">Upload any homeowner, auto, or commercial policy PDF alongside a claim summary. iLow reads both and returns a structured list of covered and not-covered items — each with a direct citation to the policy language.</p>
-          <div class="feature-detail">
-            <div class="feature-point">Supports any standard PDF policy format</div>
-            <div class="feature-point">Direct citations to policy sections</div>
-            <div class="feature-point">Overall coverage determination with confidence score</div>
-          </div>
-        </div>
-
-        <div class="feature-card fade-in">
-          <div class="feature-icon">📷</div>
-          <div class="feature-title">Damage Image Assessor</div>
-          <p class="feature-desc">Upload roof, interior, or vehicle damage photos. iLow identifies the damage type, assigns a severity rating (Minor to Total Loss), classifies affected materials by replacement cost tier, and flags anomalies worth investigating.</p>
-          <div class="feature-detail">
-            <div class="feature-point">Damage type: hail, water, fire, collision, wind</div>
-            <div class="feature-point">Material cost tiers: Low / Medium / High</div>
-            <div class="feature-point">Estimated repair scope and red flags</div>
-          </div>
-        </div>
-
-        <div class="feature-card fade-in">
-          <div class="feature-icon">🔍</div>
-          <div class="feature-title">Fraud Flag Screener</div>
-          <p class="feature-desc">Run claim details through iLow's AI fraud analysis. It checks for new-policy claims, high-frequency claimants, date inconsistencies, high-risk zip codes, inflated amounts, and vague or suspicious descriptions.</p>
-          <div class="feature-detail">
-            <div class="feature-point">Risk score from 0–100 with explanation</div>
-            <div class="feature-point">Individual red flags with severity ratings</div>
-            <div class="feature-point">Recommended action: Approve / Review / Investigate</div>
-          </div>
-        </div>
-
-        <div class="feature-card fade-in">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-title">Built for Speed and Clarity</div>
-          <p class="feature-desc">No training required. No complex setup. Adjusters upload what they already have and get a structured result in seconds. Every output is designed to be handed directly to a supervisor or used in a claim file.</p>
-          <div class="feature-detail">
-            <div class="feature-point">Results in under 15 seconds per claim</div>
-            <div class="feature-point">Structured JSON output for system integration</div>
-            <div class="feature-point">Explainable AI — every decision has a reason</div>
-          </div>
-        </div>
-
-      </div>
+      <p class="cta-note">Limited pilot programs available for select agencies</p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ── DEMO VIDEO ── -->
-  <section id="demo">
-    <div class="container">
-      <div class="section-header fade-in">
-        <div class="tag">See It In Action</div>
-        <h2 class="section-title">Watch iLow process<br />a real claim.</h2>
-        <p class="section-desc">A live walkthrough of the full pipeline — policy match, image assessment, and fraud screen — on a single claim in under 60 seconds.</p>
-      </div>
-      <div class="video-wrap fade-in">
-        <div class="video-placeholder">
-          <div class="play-btn">▶</div>
-          <div class="video-label">iLow Demo — Full Claims Pipeline</div>
-          <div class="video-sub">60 seconds · Policy + Image + Fraud</div>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="container footer-inner">
+    <a href="#hero" class="footer-logo">i<em>L</em>ow</a>
+    <p class="footer-copy">© 2026 iLow AI. All rights reserved.</p>
+    <ul class="footer-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li>
+        <a href="https://www.linkedin.com/company/ilow-ai" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>
 
-  <!-- ── VISION ── -->
-  <section id="vision">
-    <div class="container">
-      <div class="vision-inner fade-in">
-        <div class="tag">Our Vision</div>
-        <p class="vision-quote">
-          A world where <span class="highlight">every insurance claim</span> gets a fair, fast decision —
-          not because we replaced adjusters, but because we gave them the tools they never had.
-        </p>
-        <p class="vision-sub">
-          The US mid-market — regional agencies, independent adjusters, smaller carriers — has been left behind
-          by AI built for enterprises. iLow is changing that. We're starting with the three hardest daily tasks
-          and building toward a full claims intelligence platform.
-        </p>
-        <div class="vision-metrics">
-          <div class="metric">
-            <div class="metric-value"><span>40</span>%</div>
-            <div class="metric-label">Faster cycle time</div>
-          </div>
-          <div class="metric">
-            <div class="metric-value"><span>3</span>x</div>
-            <div class="metric-label">More claims per adjuster</div>
-          </div>
-          <div class="metric">
-            <div class="metric-value"><span>$0</span></div>
-            <div class="metric-label">Setup cost</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<script>
+/* ── Nav scroll ── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 20); }, {passive:true});
 
-  <!-- ── WAITLIST ── -->
-  <section id="waitlist">
-    <div class="container">
-      <div class="waitlist-box fade-in">
-        <div class="tag">Early Access</div>
-        <h2 class="waitlist-title">Be among the first inside iLow</h2>
-        <p class="waitlist-sub">
-          We're onboarding a small group of adjusters and agency owners to shape the product.
-          Drop your email and we'll reach out personally.
-        </p>
-        <form class="waitlist-form" onsubmit="handleWaitlist(event)">
-          <input type="email" class="waitlist-input" placeholder="your@email.com" required id="waitlist-email" />
-          <button type="submit" class="waitlist-btn">Request Early Access</button>
-        </form>
-        <div class="waitlist-success" id="waitlist-success">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
-          You're on the list. We'll be in touch soon.
-        </div>
-        <p class="waitlist-note">No spam. No commitment. Just early access to a tool built for your workflow.</p>
-      </div>
-    </div>
-  </section>
+/* ── Fade-in on scroll ── */
+const fiObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const siblings = [...e.target.parentElement.querySelectorAll('.fi')];
+    const i = siblings.indexOf(e.target);
+    setTimeout(() => e.target.classList.add('in'), i * 90);
+    fiObs.unobserve(e.target);
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fi').forEach(el => fiObs.observe(el));
 
-  <!-- ── FOOTER ── -->
-  <footer>
-    <div class="container footer-inner">
-      <a href="#hero" class="footer-logo">i<span>L</span>ow</a>
-      <p class="footer-copy">© 2026 iLow AI. All rights reserved.</p>
-      <ul class="footer-links">
-        <li><a href="#">Privacy</a></li>
-        <li><a href="#">Terms</a></li>
-        <li>
-          <a href="https://www.linkedin.com/company/ilow-ai" target="_blank" rel="noopener">
-            <svg class="linkedin-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-            LinkedIn
-          </a>
-        </li>
-      </ul>
-    </div>
-  </footer>
+/* ── Animated counters ── */
+function animCount(el, target, duration, comma) {
+  const start = performance.now();
+  const tick = (now) => {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = Math.round(ease * target);
+    el.textContent = comma ? val.toLocaleString() : val;
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
 
-  <script>
-    /* Fade-in on scroll */
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const siblings = Array.from(entry.target.parentElement.querySelectorAll('.fade-in'));
-          const delay = siblings.indexOf(entry.target) * 80;
-          setTimeout(() => entry.target.classList.add('visible'), delay);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-
-    /* Waitlist form */
-    function handleWaitlist(e) {
-      e.preventDefault();
-      const form = document.querySelector('.waitlist-form');
-      const note = document.querySelector('.waitlist-note');
-      const success = document.getElementById('waitlist-success');
-      form.style.transition = 'opacity 0.35s, transform 0.35s';
-      form.style.opacity = '0'; form.style.transform = 'translateY(-8px)';
-      note.style.transition = 'opacity 0.3s'; note.style.opacity = '0';
-      setTimeout(() => {
-        form.style.display = 'none'; note.style.display = 'none';
-        success.style.display = 'flex'; success.style.opacity = '0';
-        success.style.transition = 'opacity 0.4s';
-        requestAnimationFrame(() => success.style.opacity = '1');
-      }, 350);
-    }
-
-    /* Nav active highlight */
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-links a');
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
-      navLinks.forEach(a => {
-        a.style.color = '';
-        if (a.getAttribute('href') === `#${current}`) a.style.color = 'var(--text-pri)';
-      });
-    }, { passive: true });
-
-    /* Video placeholder click */
-    document.querySelector('.video-placeholder').addEventListener('click', () => {
-      alert('Demo video coming soon! In the meantime, request early access to see a live walkthrough.');
+const cntObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('.counter').forEach(el => {
+      animCount(el, +el.dataset.target, 1400, el.dataset.comma);
     });
-  </script>
+    e.target.querySelectorAll('.kpi-counter').forEach(el => {
+      animCount(el, +el.dataset.target, 1200, false);
+    });
+    cntObs.unobserve(e.target);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('#stats, #vision').forEach(s => cntObs.observe(s));
+
+/* ── Compare bar animation ── */
+const barObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('.compare-bar').forEach(b => {
+      setTimeout(() => { b.style.width = b.dataset.width + '%'; }, 200);
+    });
+    barObs.unobserve(e.target);
+  });
+}, { threshold: 0.3 });
+const compareCard = document.querySelector('.compare-card');
+if (compareCard) barObs.observe(compareCard);
+
+/* ── Demo flow ── */
+function buildDemoRunner(cfg) {
+  return function() {
+    const btn = document.getElementById(cfg.btn);
+    const label = document.getElementById(cfg.label);
+    const spinner = document.getElementById(cfg.spinner);
+    const bar = document.getElementById(cfg.bar);
+    const panels = cfg.panels.map(id => document.getElementById(id));
+    const steps = cfg.steps.map(id => document.getElementById(id));
+    const connectors = cfg.connectors.map(id => document.getElementById(id));
+    const fraudScore = document.getElementById(cfg.fraudScore);
+    const fraudBar = document.getElementById(cfg.fraudBar);
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    label.textContent = 'Analyzing policy…';
+    bar.style.width = '20%';
+
+    const stepTexts = ['Analyzing policy…', 'Assessing damage…', 'Running fraud check…', 'Generating decision…'];
+    const delays = [1200, 2200, 3200, 4200];
+
+    delays.forEach((delay, i) => {
+      setTimeout(() => {
+        // Update step indicators
+        steps.forEach((s, j) => {
+          s.classList.remove('active', 'done');
+          if (j < i) { s.classList.add('done'); s.querySelector('.step-dot').textContent = '✓'; }
+          else if (j === i) s.classList.add('active');
+        });
+        connectors.forEach((c, j) => {
+          c.classList.toggle('done', j < i);
+        });
+
+        // Show panel
+        panels[i].classList.add('visible');
+
+        // Animate confidence bars in panel
+        panels[i].querySelectorAll('.conf-fill[data-target]').forEach(f => {
+          setTimeout(() => { f.style.width = f.dataset.target + '%'; }, 100);
+        });
+
+        // Animate fraud score
+        if (i === 2 && fraudScore && fraudBar) {
+          const target = +fraudBar.dataset.target;
+          animCount(fraudScore, target, 900, false);
+          setTimeout(() => { fraudBar.style.width = target + '%'; }, 100);
+        }
+
+        // Update progress bar and label
+        bar.style.width = ((i + 1) / 4 * 100) + '%';
+        if (i < 3) label.textContent = stepTexts[i + 1];
+        else {
+          label.textContent = 'Analysis Complete ✓';
+          spinner.style.display = 'none';
+          btn.disabled = false;
+          btn.style.background = 'var(--green)';
+          setTimeout(() => {
+            btn.style.background = '';
+            label.textContent = 'Analyze Again →';
+            // Reset
+            setTimeout(() => {
+              panels.forEach(p => p.classList.remove('visible'));
+              steps.forEach((s, j) => {
+                s.classList.remove('active', 'done');
+                s.querySelector('.step-dot').textContent = j + 1;
+              });
+              connectors.forEach(c => c.classList.remove('done'));
+              bar.style.transition = 'none';
+              bar.style.width = '0';
+              setTimeout(() => { bar.style.transition = 'width 0.8s ease'; }, 50);
+              label.textContent = 'Analyze Claim →';
+              if (fraudScore) fraudScore.textContent = '0';
+              if (fraudBar) { fraudBar.style.width = '0%'; }
+              panels[0].querySelectorAll('.conf-fill').forEach(f => f.style.width = '0%');
+            }, 3000);
+          }, 1500);
+        }
+      }, delay);
+    });
+  };
+}
+
+const runDemo = buildDemoRunner({
+  btn: 'analyze-btn', label: 'analyze-label', spinner: 'analyze-spinner',
+  bar: 'progress-bar',
+  panels: ['panel-policy','panel-damage','panel-fraud','panel-decision'],
+  steps: ['s1','s2','s3','s4'],
+  connectors: ['c1','c2','c3'],
+  fraudScore: 'fraud-score', fraudBar: 'fraud-bar'
+});
+
+const runSectionDemo = buildDemoRunner({
+  btn: 'sanalyze-btn', label: 'sanalyze-label', spinner: 'sanalyze-spinner',
+  bar: 'sprogress-bar',
+  panels: ['spanel-policy','spanel-damage','spanel-fraud','spanel-decision'],
+  steps: ['ss1','ss2','ss3','ss4'],
+  connectors: ['sc1','sc2','sc3'],
+  fraudScore: 'sfraud-score', fraudBar: 'sfraud-bar'
+});
+
+/* ── Demo CTA form ── */
+function handleDemo(e) {
+  e.preventDefault();
+  const form = e.target;
+  const success = document.getElementById('cta-success');
+  const note = document.querySelector('.cta-note');
+  form.style.opacity = '0'; form.style.transform = 'translateY(-6px)';
+  form.style.transition = 'opacity 0.3s, transform 0.3s';
+  note.style.opacity = '0'; note.style.transition = 'opacity 0.3s';
+  setTimeout(() => {
+    form.style.display = 'none'; note.style.display = 'none';
+    success.style.display = 'flex'; success.style.opacity = '0';
+    success.style.transition = 'opacity 0.4s';
+    requestAnimationFrame(() => { success.style.opacity = '1'; });
+  }, 320);
+}
+
+/* ── Nav scroll highlight ── */
+const allSections = document.querySelectorAll('section[id]');
+const allNavLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  allSections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id; });
+  allNavLinks.forEach(a => {
+    a.style.color = '';
+    if (a.getAttribute('href') === `#${cur}`) a.style.color = 'var(--t1)';
+  });
+}, {passive:true});
+</script>
 
 </body>
 </html>
