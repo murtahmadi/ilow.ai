@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>iLow — Claims Processing Demo</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -171,10 +172,32 @@
 
     /* ── IMAGE PREVIEW ── */
     .img-preview-wrap { margin-top: 14px; display: none; }
-    .img-preview-wrap img {
-      width: 100%; max-height: 280px; object-fit: cover;
+    .img-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .img-preview-thumb {
+      width: 100%; aspect-ratio: 1; object-fit: cover;
       border-radius: 8px; border: 1px solid var(--bg-border);
     }
+    .img-count-badge {
+      font-size: 0.78rem; font-weight: 600; color: var(--accent);
+      background: var(--accent-dim); border-radius: 6px;
+      padding: 5px 10px; margin-top: 8px; display: inline-block;
+    }
+    /* Cost estimate */
+    .cost-estimate-box {
+      background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .cost-range { font-size: 1.3rem; font-weight: 800; color: var(--green); margin-bottom: 4px; }
+    .cost-basis { font-size: 0.8rem; color: var(--text-sec); line-height: 1.6; }
+    /* Multi-image result sections */
+    .image-result-header {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-dim); padding: 10px 0 8px; border-bottom: 1px solid var(--bg-border);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .image-result-header img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+    .image-result-block { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--bg-border); }
+    .image-result-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
     /* ── BUTTONS ── */
     .btn {
@@ -479,15 +502,16 @@
 
           <form id="image-form" onsubmit="submitImage(event)">
             <div class="form-group">
-              <label>Property / Vehicle Damage Photo</label>
+              <label>Property / Vehicle Damage Photos</label>
               <div class="drop-zone" id="image-drop">
-                <input type="file" id="image-file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="onImageFile(this)" />
+                <input type="file" id="image-file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onchange="onImageFile(this)" />
                 <div class="drop-icon">🏠</div>
-                <div class="drop-label"><strong>Click or drag</strong> a damage photo here</div>
-                <div class="drop-hint">JPEG, PNG, or WebP — roof, vehicle, interior, etc.</div>
+                <div class="drop-label"><strong>Click or drag</strong> damage photos here</div>
+                <div class="drop-hint">Select multiple images — JPEG, PNG, or WebP</div>
               </div>
               <div class="img-preview-wrap" id="img-preview-wrap">
-                <img id="img-preview" src="" alt="Preview" />
+                <div class="img-preview-grid" id="img-preview-grid"></div>
+                <div id="img-count-badge" class="img-count-badge" style="display:none"></div>
               </div>
             </div>
 
@@ -635,18 +659,28 @@
       el.style.display = 'inline-flex';
     }
 
-    /* ── Image File ── */
+    /* ── Image File (multiple) ── */
     function onImageFile(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = document.getElementById('img-preview');
-        const wrap = document.getElementById('img-preview-wrap');
-        img.src = e.target.result;
-        wrap.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+      const files = Array.from(input.files);
+      if (!files.length) return;
+      const grid = document.getElementById('img-preview-grid');
+      const wrap = document.getElementById('img-preview-wrap');
+      const badge = document.getElementById('img-count-badge');
+      grid.innerHTML = '';
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'img-preview-thumb';
+          img.alt = file.name;
+          grid.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+      wrap.style.display = 'block';
+      badge.textContent = `${files.length} image${files.length > 1 ? 's' : ''} selected`;
+      badge.style.display = 'inline-block';
     }
 
     /* ── Loading State ── */
@@ -785,19 +819,21 @@ DEDUCTIBLE: Standard $1,000 applies to all Section I claims. Separate 1% hail de
     async function submitImage(e) {
       e.preventDefault();
       const fileInput = document.getElementById('image-file');
-      if (!fileInput.files.length) { alert('Please select an image file.'); return; }
+      const files = Array.from(fileInput.files);
+      if (!files.length) { alert('Please select one or more image files.'); return; }
 
-      const formData = new FormData();
-      formData.append('image', fileInput.files[0]);
-
-      setLoading('image-btn', true, 'Assessing damage…');
-      document.getElementById('image-result').innerHTML = loadingHTML('Analyzing damage image…');
+      setLoading('image-btn', true, files.length > 1 ? `Assessing ${files.length} images…` : 'Assessing damage…');
+      document.getElementById('image-result').innerHTML = loadingHTML(`Analyzing ${files.length} image${files.length > 1 ? 's' : ''}…`);
 
       try {
-        const res = await fetch(`${API_BASE}/api/analyze-image`, { method: 'POST', body: formData });
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
-        const data = await res.json();
-        renderImageResult(data);
+        const results = await Promise.all(files.map(async file => {
+          const formData = new FormData();
+          formData.append('image', file);
+          const res = await fetch(`${API_BASE}/api/analyze-image`, { method: 'POST', body: formData });
+          if (!res.ok) throw new Error(`Server error ${res.status} on ${file.name}`);
+          return { data: await res.json(), file };
+        }));
+        renderImageResults(results);
       } catch (err) {
         document.getElementById('image-result').innerHTML = errorHTML(err.message);
       } finally {
@@ -806,8 +842,29 @@ DEDUCTIBLE: Standard $1,000 applies to all Section I claims. Separate 1% hail de
       }
     }
 
+    function renderImageResults(results) {
+      if (results.length === 1) {
+        renderImageResult(results[0].data);
+        return;
+      }
+      const container = document.getElementById('image-result');
+      container.innerHTML = results.map((r, i) => {
+        const thumbSrc = document.querySelectorAll('.img-preview-thumb')[i]?.src || '';
+        const headerImg = thumbSrc ? `<img src="${thumbSrc}" alt="">` : '';
+        return `<div class="image-result-block">
+          <div class="image-result-header">${headerImg} Image ${i + 1}: ${escHtml(r.file.name)}</div>
+          ${buildImageResultHTML(r.data)}
+        </div>`;
+      }).join('');
+    }
+
     function renderImageResult(d) {
       if (d.raw) { document.getElementById('image-result').innerHTML = `<div class="summary-box" style="white-space:pre-wrap;font-size:0.8rem;">${escHtml(d.raw)}</div>`; return; }
+      document.getElementById('image-result').innerHTML = buildImageResultHTML(d);
+    }
+
+    function buildImageResultHTML(d) {
+      if (d.raw) return `<div class="summary-box" style="white-space:pre-wrap;font-size:0.8rem;">${escHtml(d.raw)}</div>`;
 
       const sevMap = { 'minor': 'minor', 'moderate': 'moderate', 'severe': 'severe', 'total loss': 'total' };
       const sevClass = sevMap[(d.severity || '').toLowerCase()] || 'moderate';
@@ -821,6 +878,15 @@ DEDUCTIBLE: Standard $1,000 applies to all Section I claims. Separate 1% hail de
 
       if (d.damage_type) {
         html += `<div class="result-section"><div class="result-label">Damage Type</div><div style="font-size:1rem;font-weight:700;color:var(--text-pri)">🔧 ${escHtml(d.damage_type)}</div>${d.severity_explanation ? `<div style="font-size:0.82rem;color:var(--text-sec);margin-top:4px;">${escHtml(d.severity_explanation)}</div>` : ''}</div>`;
+      }
+
+      if (d.cost_estimate) {
+        const ce = d.cost_estimate;
+        html += `<div class="result-section"><div class="result-label">💰 Estimated Repair Cost</div>
+          <div class="cost-estimate-box">
+            <div class="cost-range">${escHtml(ce.low || '')} – ${escHtml(ce.high || '')}</div>
+            ${ce.basis ? `<div class="cost-basis">${escHtml(ce.basis)}</div>` : ''}
+          </div></div>`;
       }
 
       if (d.summary) {
@@ -857,7 +923,7 @@ DEDUCTIBLE: Standard $1,000 applies to all Section I claims. Separate 1% hail de
         html += `<div class="result-section"><div class="result-label">AI Confidence</div><div class="confidence-row"><div class="confidence-bar"><div class="confidence-fill" style="width:${d.confidence_score}%"></div></div><span class="confidence-value">${d.confidence_score}%</span></div></div>`;
       }
 
-      document.getElementById('image-result').innerHTML = html;
+      return html;
     }
 
     /* ═══════════════════════════════════════

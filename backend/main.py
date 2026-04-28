@@ -121,6 +121,11 @@ Return a JSON object with these exact keys:
   "affected_areas": ["list of specific damaged components/areas"],
   "materials": [{"component": "string", "cost_tier": "Low | Medium | High", "notes": "string"}],
   "estimated_scope": "brief scope of repair needed",
+  "cost_estimate": {
+    "low": "dollar amount string e.g. $2,500",
+    "high": "dollar amount string e.g. $6,000",
+    "basis": "1-2 sentence explanation of how you arrived at this range based on visible damage, materials, and typical US labor and material rates"
+  },
   "red_flags": ["any anomalies worth investigating — empty array if none"],
   "confidence_score": 0-100,
   "summary": "2-3 sentence plain-English assessment"
